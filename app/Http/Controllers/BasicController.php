@@ -69,10 +69,11 @@ class BasicController extends Controller
         $fb = new \Facebook\Facebook([
             'app_id' => config('system.facebook.app_id'),
             'app_secret' => config('system.facebook.app_secret'),
-            'default_graph_version' => 'v2.11'
+            'default_graph_version' => 'v2.11',
+            'http_client_handler' => 'stream'
         ]);
         $helper = $fb->getRedirectLoginHelper();
-        return $helper->getLoginUrl('http://obd.seniorphp.net',  ['ads_management']);
+        return $helper->getLoginUrl(url('/'),  ['ads_management']);
     }
 
     public function index()
@@ -87,7 +88,8 @@ class BasicController extends Controller
             $fb = new \Facebook\Facebook([
                 'app_id' => config('system.facebook.app_id'),
                 'app_secret' => config('system.facebook.app_secret'),
-                'default_graph_version' => 'v2.11'
+                'default_graph_version' => 'v2.11',
+                'http_client_handler' => 'stream'
             ]);
 
             $helper = $fb->getRedirectLoginHelper();
