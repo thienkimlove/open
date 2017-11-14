@@ -12,6 +12,7 @@ class Helpers {
        return Role::pluck('name', 'id')->all();
     }
 
+
     public static function inDeepArray($key, $value, $ars)
     {
         $in = false;

@@ -66,16 +66,25 @@
         <div class="col-lg-12">
             <div class="portlet">
                 <div class="portlet-heading">
-                    <h3 class="portlet-title text-dark"> Số lượng giao dịch xử lý trong ngày</h3>
+                    <h3 class="portlet-title text-dark">Thông báo của hệ thống</h3>
                     <div class="portlet-widgets">
                         <a href="javascript:;" data-toggle="reload"><i class="ion-refresh"></i></a>
                         <span class="divider"></span>
                         <a href="#" data-toggle="remove"><i class="ion-close-round"></i></a>
                     </div>
                     <div class="clearfix"></div>
-                </div>
 
-                <div id="roated-chart"></div>
+                    <div class="form-group">
+                        @include('flash-message::default')
+                    </div>
+
+                    @if ($fbAuthUrl)
+                        <div>
+                            <a href="{{$fbAuthUrl}}">Thêm mới tài khoản Facebook trên hệ thống hoặc làm mới Facebook Token</a>
+                        </div>
+                    @endif
+
+                </div>
             </div>
         </div>
     </div>

@@ -20,6 +20,8 @@ Route::get('notice', 'BasicController@notice')->name('notice');
 Route::group(['middleware' => 'acl'], function() {
 
     Route::get('/', 'BasicController@index')->name('index');
+    #Facebook Get Long Token
+    Route::get('/auth', 'BasicController@auth')->name('auth');
     Route::post('ajax', 'BasicController@ajax')->name('ajax');
 
     Route::get('users.dataTables', ['uses' => 'UsersController@dataTables', 'as' => 'users.dataTables']);
