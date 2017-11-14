@@ -8,6 +8,7 @@ class AdAccount extends Model
 {
     protected $fillable = [
         'id',
+        'user_id',
         'fb_account_id',
         'name'
     ];

@@ -9,6 +9,10 @@ class AdAd extends Model
     protected $fillable = [
         'id',
         'ad_adset_id',
+        'user_id',
+        'ad_account_id',
+        'fb_account_id',
+        'ad_campaign_id',
         'name'
     ];
 

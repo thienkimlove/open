@@ -41,28 +41,38 @@ class UpdateInsight extends Command
 
 
 
-    public function read($object, $parenId, $type, $fields, $params)
+    public function read($object, $type, $fields, $params, $user_id = null, $fb_account_id = null, $ad_account_id = null, $ad_campaign_id = null, $ad_adset_id = null)
     {
         $contentId = ($type == config('system.insight.types.account')) ? $object->account_id : $object->id;
 
         if ($type == config('system.insight.types.account')) {
             AdAccount::updateOrCreate(['id' => $contentId], [
-                'fb_account_id' => $parenId,
+                'user_id' => $user_id,
+                'fb_account_id' => $fb_account_id,
                 'name' => $object->name
             ]);
         } elseif ($type == config('system.insight.types.campaign')) {
             AdCampaign::updateOrCreate(['id' => $contentId], [
-                'ad_account_id' => $parenId,
+                'user_id' => $user_id,
+                'fb_account_id' => $fb_account_id,
+                'ad_account_id' => $ad_account_id,
                 'name' => $object->name
             ]);
         } elseif ($type == config('system.insight.types.adset')) {
             AdAdSet::updateOrCreate(['id' => $contentId], [
-                'ad_campaign_id' => $parenId,
+                'user_id' => $user_id,
+                'fb_account_id' => $fb_account_id,
+                'ad_account_id' => $ad_account_id,
+                'ad_campaign_id' => $ad_campaign_id,
                 'name' => $object->name
             ]);
         } elseif ($type == config('system.insight.types.ad')) {
             AdAd::updateOrCreate(['id' => $contentId], [
-                'ad_adset_id' => $parenId,
+                'user_id' => $user_id,
+                'fb_account_id' => $fb_account_id,
+                'ad_account_id' => $ad_account_id,
+                'ad_campaign_id' => $ad_campaign_id,
+                'ad_adset_id' => $ad_adset_id,
                 'name' => $object->name
             ]);
         }
@@ -73,6 +83,8 @@ class UpdateInsight extends Command
                 'content_type' => $type,
                 'date' => Carbon::parse($insight->date_start)->toDateString()
             ], [
+                'user_id' => $user_id,
+                'fb_account_id' => $fb_account_id,
                 'account_currency' => $insight->account_currency,
                 'account_id' => $insight->account_id,
                 'account_name'=> $insight->account_name,
@@ -181,26 +193,27 @@ class UpdateInsight extends Command
             ]);
 
             foreach ($accounts as $account) {
-                $this->read($account, $fbAccount->id, config('system.insight.types.account'), $fields, $params);
+                $this->read($account, config('system.insight.types.account'), $fields, $params, $fbAccount->user_id, $fbAccount->id);
+
                 $campaigns = $account->getCampaigns([
                     'id',
                     'name'
                 ]);
 
                 foreach ($campaigns as $campaign) {
-                    $this->read($campaign, $account->account_id, config('system.insight.types.campaign'), $fields, $params);
+                    $this->read($campaign, config('system.insight.types.campaign'), $fields, $params, $fbAccount->user_id, $fbAccount->id,$account->account_id);
                     $adSets = $campaign->getAdSets([
                         'id',
                         'name'
                     ]);
                     foreach ($adSets as $adSet) {
-                        $this->read($adSet, $campaign->id, config('system.insight.types.adset'), $fields, $params);
+                        $this->read($adSet, config('system.insight.types.adset'), $fields, $params, $fbAccount->user_id, $fbAccount->id,$account->account_id, $campaign->id);
                         $ads = $adSet->getAds([
                             'id',
                             'name'
                         ]);
                         foreach ($ads as $ad) {
-                            $this->read($ad, $adSet->id, config('system.insight.types.ad'), $fields, $params);
+                            $this->read($ad, config('system.insight.types.ad'), $fields, $params, $fbAccount->user_id, $fbAccount->id,$account->account_id, $campaign->id, $adSet->id);
                         }
                     }
                 }

@@ -27,6 +27,9 @@ Route::group(['middleware' => 'acl'], function() {
     Route::get('users.dataTables', ['uses' => 'UsersController@dataTables', 'as' => 'users.dataTables']);
     Route::resource('users', 'UsersController');
 
+    Route::get('insights.dataTables', ['uses' => 'InsightsController@dataTables', 'as' => 'insights.dataTables']);
+    Route::resource('insights', 'InsightsController');
+
     Route::get('users/{id}/permissions', ['uses' => 'UserPermissionsController@index', 'as' => 'userPermissions.index']);
     Route::put('users/{id}/permissions', ['uses' => 'UserPermissionsController@update', 'as' => 'userPermissions.update']);
 

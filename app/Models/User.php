@@ -45,13 +45,14 @@ class User extends EloquentUser implements
         return $this->belongsToMany(Role::class, 'role_users', 'user_id', 'role_id');
     }
 
+
     public function fbAccounts()
     {
         return $this->hasMany(FbAccount::class, 'user_id', 'id');
     }
 
 
-    public static function getDatatables($request)
+    public static function getDataTables($request)
     {
         $user = static::select('id', 'name', 'email', 'status', 'created_at')->with('roles');
 

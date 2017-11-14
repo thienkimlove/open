@@ -2,6 +2,7 @@
 
 namespace App\Lib;
 
+use App\Models\User;
 use Facades\App\Models\Role;
 use Carbon\Carbon;
 
@@ -10,6 +11,11 @@ class Helpers {
     public static function roleList()
     {
        return Role::pluck('name', 'id')->all();
+    }
+
+    public static function userList()
+    {
+        return User::pluck('name', 'id')->all();
     }
 
 

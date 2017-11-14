@@ -10,7 +10,12 @@
                     <a href="/"><i class="md md-dashboard"></i>Trang chủ</a>
                 </li>
 
-                @if ($currentUser->isSuperAdmin())
+                <li class="has-submenu">
+                    <a href="{{ route('insights.index')}}"><i class="md md-view-list"></i>Thống kê</a>
+                </li>
+
+
+            @if ($currentUser->isSuperAdmin())
                 <li class="has-submenu">
                     <a href="#"><i class="md md-class"></i>Other</a>
                     <ul class="submenu">
