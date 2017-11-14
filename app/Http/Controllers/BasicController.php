@@ -60,6 +60,8 @@ class BasicController extends Controller
         Sentinel::logout();
         @file_get_contents('https://accounts.google.com/o/oauth2/revoke?token='.session()->get('google_token'));
         session()->forget('google_token');
+        flash('info', 'Bạn đã đăng xuất thành công!<a href="'.url('/').'">Back</a>');
+        return redirect('notice');
     }
 
     public function getFacebookUrl()
@@ -70,7 +72,7 @@ class BasicController extends Controller
             'default_graph_version' => 'v2.11'
         ]);
         $helper = $fb->getRedirectLoginHelper();
-        return $helper->getLoginUrl('http://obd.seniorphp.net',  ['ads_management']);
+        return $helper->getLoginUrl(url('/'),  ['ads_management']);
     }
 
     public function index()

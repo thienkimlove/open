@@ -54,13 +54,13 @@ class UserRequest extends FormRequest
     {
         if (! isset($this->status)) {
             User::create(array_merge($this->all(), [
-                'status' => 0
+                'status' => 0,
             ]));
 
             return $this;
         }
 
-        User::create($this->all() + ['password' => md5(time())]);
+        User::create(array_merge($this->all(), ['password' => md5(time())]));
 
         return $this;
     }
