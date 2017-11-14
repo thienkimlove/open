@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Database\Seeder;
+use Hashids\Hashids;
 
 class DatabaseSeeder extends Seeder
 {
@@ -11,6 +12,26 @@ class DatabaseSeeder extends Seeder
      */
     public function run()
     {
-        // $this->call(UsersTableSeeder::class);
+        $devEmail = file(resource_path('users/list.txt'), FILE_IGNORE_NEW_LINES);
+
+        $sentinel = app('Cartalyst\Sentinel\Sentinel');
+
+        foreach ($devEmail as $email) {
+
+            $countUser = DB::table('users')->where('email', $email)->count();
+
+            if ($countUser == 0) {
+                $sentinel->registerAndActivate([
+                    'name' => $email,
+                    'email' => $email,
+                    'password' => 'secret',
+                    'is_superadmin' => true,
+                ]);
+            }
+            else {
+                $user = \App\Models\User::where('email', $email)->first();
+                $user->setActivation(true);
+            }
+        }
     }
 }
