@@ -28,9 +28,7 @@ class Kernel extends ConsoleKernel
         // $schedule->command('inspire')
         //          ->hourly();
         $schedule->command('update:insight')
-            ->appendOutputTo(storage_path('logs/insight.log'))
-            ->withoutOverlapping()
-            ->everyMinute();
+            ->dailyAt('08:00');
     }
 
     /**
