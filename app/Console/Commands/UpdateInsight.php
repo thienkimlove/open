@@ -139,8 +139,10 @@ class UpdateInsight extends Command
                 $start_date = Carbon::now()->toDateString();
                 $end_date = Carbon::now()->toDateString();
             } else {
-                $start_date = "2016-07-12";
-                $end_date = "2016-07-19";
+                //$start_date = "2016-07-12";
+                //$end_date = "2016-07-19";
+                $start_date = Carbon::now()->startOfMonth()->toDateString();
+                $end_date = Carbon::now()->toDateString();
             }
 
             $fields = [
