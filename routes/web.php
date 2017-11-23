@@ -38,9 +38,19 @@ Route::group(['middleware' => 'acl'], function() {
     Route::put('roles/{id}/permissions', ['uses' => 'RolePermissionsController@update', 'as' => 'rolePermissions.update']);
     Route::resource('permissions', 'PermissionsController', ['only' => ['index']]);
 
+    Route::get('departments/datatables', 'DepartmentsController@datatables')->name('departments.datatables');
+    Route::resource('departments', 'DepartmentsController');
 });
 
 Route::get('/test', 'Example@index');
 Route::get('/marketing-api', 'Example@api');
+
+// Login-as-user
+Route::post('visudo/login-as-user', 'ViSudoController@loginAsUser')
+    ->name('visudo.login_as_user');
+
+Route::post('visudo/return', 'ViSudoController@return')
+    ->name('visudo.return');
+
 
 

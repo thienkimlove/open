@@ -2,6 +2,7 @@
 
 namespace App\Lib;
 
+use App\Models\Department;
 use App\Models\User;
 use Facades\App\Models\Role;
 use Carbon\Carbon;
@@ -18,6 +19,10 @@ class Helpers {
         return User::pluck('name', 'id')->all();
     }
 
+    public static function departmentList()
+    {
+        return Department::where('status', 1)->pluck('name', 'id')->toArray();
+    }
 
     public static function inDeepArray($key, $value, $ars)
     {

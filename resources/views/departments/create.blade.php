@@ -14,15 +14,15 @@
     <div class="row">
         <div class="col-sm-12">
             <div class="btn-group pull-right m-t-15">
-                <a href="{{ route('users.index') }}" class="btn btn-primary waves-effect waves-light"><span class="m-r-5"><i class="fa fa-list"></i></span> List</a>
+                <a href="{{ route('departments.index') }}" class="btn btn-primary waves-effect waves-light"><span class="m-r-5"><i class="fa fa-list"></i></span> Danh sách</a>
             </div>
-            <h4 class="page-title">Tạo mới người dùng</h4>
+            <h4 class="page-title">Thêm phòng ban</h4>
             <ol class="breadcrumb">
                 <li>
-                    <a href="{{ route('users.index') }}">Danh sách người dùng</a>
+                    <a href="{{ route('departments.index') }}">Phòng ban</a>
                 </li>
                 <li class="active">
-                    Tạo mới người dùng
+                    Thêm phòng ban
                 </li>
             </ol>
         </div>
@@ -33,38 +33,15 @@
             <div class="card-box">
                 <div class="row">
                     <div class="col-sm-12">
-                        <h4 class="header-title m-t-0"><b>Tạo mới người dùng</b></h4>
-                        {!! Form::open(['route' => ['users.store'], 'method' => 'post', 'role' => 'form', 'class' => 'form-horizontal']) !!}
+                        <h4 class="header-title m-t-0"><b>Thông tin phòng ban</b></h4>
+                        {!! Form::open(['route' => ['departments.store'], 'method' => 'post', 'role' => 'form', 'class' => 'form-horizontal']) !!}
                         @include('layouts.partials.errors')
 
                         <div class="form-group">
-                            <label class="col-md-3 control-label">Tên người dùng</label>
+                            <label class="col-md-3 control-label">Tên phòng ban</label>
                             <div class="col-md-9">
-                                {!! Form::text('name', null, ['id' => 'name', 'class' => 'form-control', 'placeholder' => 'Tên người dùng', 'required' => 'required']) !!}
+                                {!! Form::text('name', '', ['id' => 'name', 'class' => 'form-control', 'placeholder' => 'Tên người dùng']) !!}
                             </div>
-                        </div>
-
-                        <div class="form-group">
-                            <label class="col-md-3 control-label">Email</label>
-                            <div class="col-md-9">
-                                {!! Form::text('email', null, ['id' => 'email', 'class' => 'form-control', 'placeholder' => 'Email', 'required' => 'required']) !!}
-                            </div>
-                        </div>
-
-                        <div class="form-group">
-                            <label class="col-md-3 control-label">Roles</label>
-                            <div class="col-md-9">
-                                {!! Form::select('roles[]', Helpers::roleList(), null, ['id' => 'roles', 'multiple' => true, 'class' => 'select2 select2-multiple', 'data-placeholder' => 'Chọn quyền...']) !!}
-                            </div>
-
-                        </div>
-
-                        <div class="form-group">
-                            <label class="col-md-3 control-label">Phòng ban</label>
-                            <div class="col-md-9">
-                                {!! Form::select('department_id', ['' => '----- Chọn phòng ban -----'] + Helpers::departmentList(), null, ['id' => 'roles', 'class' => 'select2', 'data-placeholder' => 'Chọn phòng ban...', 'required' => 'required']) !!}
-                            </div>
-
                         </div>
 
                         <div class="form-group">
@@ -96,7 +73,6 @@
     <script type="text/javascript" src="/vendor/ubold/assets/plugins/jquery-quicksearch/jquery.quicksearch.js"></script>
     <script src="/vendor/ubold/assets/plugins/select2/js/select2.min.js" type="text/javascript"></script>
     <script src="/vendor/ubold/assets/plugins/bootstrap-select/js/bootstrap-select.min.js" type="text/javascript"></script>
-    <script src="/vendor/ubold/assets/plugins/bootstrap-filestyle/js/bootstrap-filestyle.min.js" type="text/javascript"></script>
     <script src="/vendor/ubold/assets/plugins/bootstrap-touchspin/js/jquery.bootstrap-touchspin.min.js" type="text/javascript"></script>
     <script src="/vendor/ubold/assets/plugins/bootstrap-maxlength/bootstrap-maxlength.min.js" type="text/javascript"></script>
 

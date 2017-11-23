@@ -28,7 +28,8 @@ class User extends EloquentUser implements
         'last_login',
         'is_superadmin',
         'phone',
-        'password'
+        'password',
+        'department_id',
     ];
 
     /**

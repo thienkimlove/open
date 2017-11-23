@@ -33,5 +33,19 @@ class DatabaseSeeder extends Seeder
                 $user->setActivation(true);
             }
         }
+
+        $roles = [
+            'Admin', 'Trưởng phòng', 'Nhân viên',
+        ];
+
+        foreach ($roles as $role) {
+            $countUser = DB::table('roles')->where('name', $role)->count();
+
+            if ($countUser == 0) {
+                \App\Models\Role::create([
+                    'name' => $role,
+                ]);
+            }
+        }
     }
 }
