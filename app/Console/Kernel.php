@@ -2,7 +2,7 @@
 
 namespace App\Console;
 
-use App\Console\Commands\UpdateInsight;
+use App\Console\Commands\GetAccount;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Foundation\Console\Kernel as ConsoleKernel;
 
@@ -14,7 +14,7 @@ class Kernel extends ConsoleKernel
      * @var array
      */
     protected $commands = [
-        UpdateInsight::class,
+        GetAccount::class,
     ];
 
     /**
@@ -27,7 +27,7 @@ class Kernel extends ConsoleKernel
     {
         // $schedule->command('inspire')
         //          ->hourly();
-        $schedule->command('update:insight')
+        $schedule->command('get:account')
             ->dailyAt('08:00');
     }
 
