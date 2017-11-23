@@ -78,9 +78,37 @@
                         @include('flash-message::default')
                     </div>
 
-                    @if ($fbAuthUrl)
-                        <div>
-                            <a href="{{$fbAuthUrl}}">Thêm mới tài khoản Facebook trên hệ thống hoặc làm mới Facebook Token</a>
+                    @if ($needGenerateUrl)
+                        @foreach ($needGenerateUrl as $key=>$url)
+                            <div class="cat-box-small">
+                                <a href="{{$url}}">{{ ($key == 'create') ? 'Thêm tài khoản Facebook' : 'Làm mới lại FB Token cho tài khoản <b>'.$url.'</b>' }}</a>
+                            </div>
+                        @endforeach
+                    @endif
+
+
+                    @if ($user->accounts->count() > 0)
+                        <div class="card-box table-responsive">
+                            <h4 class="m-t-0 header-title"><b>Danh sách Tài khoản Facebook sử dụng cho API</b></h4>
+                            <p class="text-muted font-13 m-b-30"></p>
+                            <table class="table table-striped table-bordered table-actions-bar">
+                                <thead>
+                                <tr>
+                                    <th>FacebookID</th>
+                                    <th>FacebookName</th>
+                                    <th>Ngày Hết Hạn Token</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                @foreach ($user->accounts as $account)
+                                    <tr>
+                                        <td>{{$account->social_id}}</td>
+                                        <td>{{$account->social_name}}</td>
+                                        <td>{{$account->api_token_start_date->addDays(60)->toDateString()}}</td>
+                                    </tr>
+                                @endforeach
+                                </tbody>
+                            </table>
                         </div>
                     @endif
 
@@ -88,6 +116,8 @@
             </div>
         </div>
     </div>
+
+
     <!-- End row -->
 @endsection
 

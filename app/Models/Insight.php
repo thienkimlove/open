@@ -11,50 +11,37 @@ class Insight extends Model
 {
     protected $fillable = [
         'user_id',
-        'fb_account_id',
-        'content_id',
-        'content_type',
-        'date',
-
-        'account_currency',
         'account_id',
-        'account_name',
-
-        'ad_id',
-        'ad_name',
-        'adset_id',
-        'adset_name',
-
-        'buying_type',
-
+        'content_id',
         'campaign_id',
-        'campaign_name',
+        'set_id',
+        'ad_id',
+        'date',
+        'object_type',
+        'social_type',
+
+        'social_account_id',
+        'social_campaign_id',
+        'social_adset_id',
+        'social_ad_id',
 
         'clicks',
-        'cpc',
-        'cpm',
-        'cpp',
-        'ctr',
-
         'impressions',
-        'inline_link_click_ctr',
-        'inline_link_clicks',
-        'inline_post_engagement',
         'reach',
-
-        'social_clicks',
-        'social_impressions',
-        'social_reach',
-        'social_spend',
         'spend',
 
-        'unique_clicks',
-        'unique_ctr',
-        'unique_inline_link_click_ctr',
-        'unique_inline_link_clicks',
-        'unique_link_clicks_ctr',
-        'unique_social_clicks',
     ];
+
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
+
+
+    public function account()
+    {
+        return $this->belongsTo(Account::class);
+    }
 
     public static function getDataTables($request)
     {
@@ -72,7 +59,7 @@ class Insight extends Model
                 }
 
                 if ($request->filled('type')) {
-                    $query->where('content_type', $request->get('type'));
+                    $query->where('object_type', $request->get('type'));
                 }
 
                 if ($request->filled('date')) {
@@ -80,10 +67,10 @@ class Insight extends Model
                     $query->whereDate('date', '>=', Carbon::createFromFormat('d/m/Y', $dateRange[0])->toDateString());
                     $query->whereDate('date', '<=', Carbon::createFromFormat('d/m/Y', $dateRange[1])->toDateString());
                 }
-            })->editColumn('content_type', function ($insight) {
-                return config('system.insight.values.'.$insight->content_type);
+            })->editColumn('object_type', function ($insight) {
+                return config('system.insight.values.'.$insight->object_type);
             })->editColumn('spend', function ($insight) {
-                return $insight->spend.$insight->account_currency;
+                return $insight->spend."VND";
             })
             ->make(true);
     }

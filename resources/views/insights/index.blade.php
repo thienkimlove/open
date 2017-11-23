@@ -79,21 +79,17 @@
                 <table id="dataTables-insight" class="table table-striped table-bordered table-actions-bar">
                     <thead>
                     <tr>
-                        <th>ObjectID</th>
-                        <th>ObjectType</th>
                         <th>Date</th>
-                        <th>Account</th>
-                        <th>Campaign</th>
-                        <th>AdSet</th>
-                        <th>Ad</th>
+                        <th>UserId</th>
+                        <th>AccountId</th>
+                        <th>AdAccountId</th>
+                        <th>CampaignId</th>
+                        <th>AdSetId</th>
+                        <th>AdId</th>
                         <th>Clicks</th>
-                        <th>CPC</th>
-                        <th>CPM</th>
-                        <th>CPP</th>
-                        <th>CTR</th>
                         <th>Impressions</th>
                         <th>Spend</th>
-
+                        <th>Reach</th>
                         <th></th>
                     </tr>
                     </thead>
@@ -149,22 +145,21 @@
                     }
                 },
                 columns: [
-                    {data: 'content_id', name: 'content_id'},
-                    {data: 'content_type', name: 'content_type'},
                     {data: 'date', name: 'date', orderable: false, searchable: false},
-                    {data: 'account_name', name: 'account_name'},
-                    {data: 'campaign_name', name: 'campaign_name'},
-                    {data: 'adset_name', name: 'adset_name', orderable: false, searchable: false},
-                    {data: 'ad_name', name: 'ad_name', orderable: false, searchable: false},
+
+                    {data: 'user_id', name: 'user_id'},
+                    {data: 'account_id', name: 'account_id'},
+                    {data: 'content_id', name: 'content_id'},
+                    {data: 'campaign_id', name: 'campaign_id'},
+                    {data: 'set_id', name: 'set_id'},
+                    {data: 'ad_id', name: 'ad_id'},
+
                     {data: 'clicks', name: 'clicks'},
-                    {data: 'cpc', name: 'cpc'},
-                    {data: 'cpm', name: 'cpm'},
-                    {data: 'cpp', name: 'cpp'},
-                    {data: 'ctr', name: 'ctr'},
                     {data: 'impressions', name: 'impressions'},
                     {data: 'spend', name: 'spend'},
+                    {data: 'reach', name: 'reach'},
                 ],
-                order: [[13, 'desc']]
+                order: [[1, 'desc']]
             });
 
             $('#search-form').on('submit', function(e) {

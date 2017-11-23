@@ -2,10 +2,10 @@
 
 namespace App\Http\Controllers;
 
-use App\Lib\Helpers;
-use App\Models\FbAccount;
+use App\Models\Account;
 use Carbon\Carbon;
-use Illuminate\Http\Request;
+use Facebook\Exceptions\FacebookSDKException;
+use Facebook\Facebook;
 use Log;
 use Sentinel;
 use Exception;
@@ -64,14 +64,8 @@ class BasicController extends Controller
         return redirect('notice');
     }
 
-    public function getFacebookUrl()
+    public function getFacebookUrl($fb)
     {
-        $fb = new \Facebook\Facebook([
-            'app_id' => config('system.facebook.app_id'),
-            'app_secret' => config('system.facebook.app_secret'),
-            'default_graph_version' => 'v2.11',
-            'http_client_handler' => 'stream'
-        ]);
         $helper = $fb->getRedirectLoginHelper();
         return $helper->getLoginUrl(url('/'),  ['ads_management']);
     }
@@ -80,18 +74,16 @@ class BasicController extends Controller
     {
         $user = Sentinel::getUser();
         $error = null;
-        $needGenerateUrl = false;
-        $fbAuthUrl = null;
+        $needGenerateUrl = [];
+        $fb = new Facebook([
+            'app_id' => config('system.facebook.app_id'),
+            'app_secret' => config('system.facebook.app_secret'),
+            'default_graph_version' => 'v2.11',
+            'http_client_handler' => 'stream'
+        ]);
+        $fbAuthUrl = $this->getFacebookUrl($fb);
 
         if (request()->filled('code')) {
-
-            $fb = new \Facebook\Facebook([
-                'app_id' => config('system.facebook.app_id'),
-                'app_secret' => config('system.facebook.app_secret'),
-                'default_graph_version' => 'v2.11',
-                'http_client_handler' => 'stream'
-            ]);
-
             $helper = $fb->getRedirectLoginHelper();
 
             try {
@@ -101,36 +93,34 @@ class BasicController extends Controller
                 $response = $fb->get('/me?fields=id,name', $accessTokenLong);
                 $fbUser = $response->getGraphUser();
                 $user = Sentinel::getUser();
-                FbAccount::updateOrCreate(['id' => $fbUser['id']], [
-                    'id' => $fbUser['id'],
+                Account::updateOrCreate([
+                    'social_id' => $fbUser['id'],
+                    'social_type' => config('system.social_type.facebook')
+                ], [
+                    'social_name' => $fbUser['name'],
                     'user_id' => $user->id,
-                    'fb_token' => $accessTokenLong,
-                    'fb_token_start' => Carbon::now()->toDateTimeString(),
+                    'api_token' => $accessTokenLong,
+                    'api_token_start_date' => Carbon::now()->toDateTimeString(),
+                    'status' => true,
                 ]);
 
-            } catch(\Facebook\Exceptions\FacebookResponseException $e) {
-                Log::error($e->getMessage());
-            } catch(\Facebook\Exceptions\FacebookSDKException $e) {
+                return redirect('/');
+
+            } catch(FacebookSDKException $e) {
                 Log::error($e->getMessage());
             }
         }
 
-        if ($user->fbAccounts->count() == 0) {
-            $needGenerateUrl = true;
+        if ($user->accounts->count() == 0) {
+            $needGenerateUrl['create'] = $fbAuthUrl;
         } else {
-            foreach ($user->fbAccounts as $fbAccount) {
-                if ( $fbAccount->fb_token_start->addDays(25) <= Carbon::now()) {
-                    $needGenerateUrl = true;
+            foreach ($user->accounts as $account) {
+                if ($account->social_type == config('system.social_type.facebook') && $account->api_token_start_date->addDays(55) <= Carbon::now()) {
+                    $needGenerateUrl[$account->social_id] = $fbAuthUrl;
                 }
             }
         }
-
-        if ($needGenerateUrl) {
-            $fbAuthUrl = $this->getFacebookUrl();
-        }
-
-
-        return view('index', compact('user', 'fbAuthUrl'));
+        return view('index', compact('user', 'needGenerateUrl'));
     }
 
     /**

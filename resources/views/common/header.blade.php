@@ -20,16 +20,8 @@
                         <a href="" class="dropdown-toggle waves-effect waves-light profile" data-toggle="dropdown"
                            aria-expanded="true"><img src="/vendor/ubold/assets/images/user.png" alt="user-img"
                                                      class="img-circle"> </a>
-                        <ul class="dropdown-menu">
-                            {{--<li><a href="javascript:void(0)"><i class="ti-user text-custom m-r-10"></i> Edit Profile</a></li>--}}
-                            {{--</li>--}}
-                            {{--<li><a href="javascript:void(0)"><i class="ti-lock text-custom m-r-10"></i> Change Password</a>--}}
-                            {{--</li>--}}
-                            <li class="divider"></li>
-                            <li><a href="{{route('logout')}}"><i class="ti-power-off text-danger m-r-10"></i> Logout</a>
-                            </li>
-                        </ul>
                     </li>
+                    <li><a href="{{route('logout')}}"><i class="ti-power-off text-danger m-r-10"></i> Logout</a>
                 </ul>
                 <div class="menu-item">
                     <!-- Mobile menu toggle-->

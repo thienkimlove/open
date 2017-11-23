@@ -46,9 +46,9 @@ class User extends EloquentUser implements
     }
 
 
-    public function fbAccounts()
+    public function accounts()
     {
-        return $this->hasMany(FbAccount::class, 'user_id', 'id');
+        return $this->hasMany(Account::class);
     }
 
 
