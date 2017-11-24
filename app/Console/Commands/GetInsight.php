@@ -102,7 +102,7 @@ class GetInsight extends Command
 
     private function getRequestParams($levelType)
     {
-        $start_date = Carbon::now()->toDateString();
+        $start_date = Carbon::now()->subDays(7)->toDateString();
         $end_date = Carbon::now()->toDateString();
 
         return  [
@@ -273,6 +273,8 @@ class GetInsight extends Command
 
             $this->getBatchObject($fb, $objects, AdsInsightsLevelValues::AD);
 
+            sleep(10);
+
 
             $objects = Set::whereNull('last_report_run')
                 ->where('account_id', $fbAccount->id)
@@ -280,7 +282,9 @@ class GetInsight extends Command
                 ->limit(10)
                 ->get();
 
-           //$this->getBatchObject($fb, $objects, AdsInsightsLevelValues::ADSET);
+           $this->getBatchObject($fb, $objects, AdsInsightsLevelValues::ADSET);
+
+            sleep(10);
 
             $objects = Campaign::whereNull('last_report_run')
                 ->where('account_id', $fbAccount->id)
@@ -288,7 +292,9 @@ class GetInsight extends Command
                 ->limit(10)
                 ->get();
 
-            //$this->getBatchObject($fb, $objects, AdsInsightsLevelValues::CAMPAIGN);
+            $this->getBatchObject($fb, $objects, AdsInsightsLevelValues::CAMPAIGN);
+
+            sleep(10);
 
 
             $objects = Content::whereNull('last_report_run')
@@ -297,7 +303,7 @@ class GetInsight extends Command
                 ->limit(10)
                 ->get();
 
-           // $this->getBatchObject($fb, $objects, AdsInsightsLevelValues::ACCOUNT);
+            $this->getBatchObject($fb, $objects, AdsInsightsLevelValues::ACCOUNT);
 
         }
     }
