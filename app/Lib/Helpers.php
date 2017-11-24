@@ -6,6 +6,7 @@ use App\Models\Department;
 use App\Models\User;
 use Facades\App\Models\Role;
 use Carbon\Carbon;
+use Sentinel;
 
 class Helpers {
 
@@ -22,6 +23,21 @@ class Helpers {
     public static function departmentList()
     {
         return Department::where('status', 1)->pluck('name', 'id')->toArray();
+    }
+
+    public static function getListUserInGroup()
+    {
+        $user = Sentinel::getUser();
+
+        if ($user->isAdmin() || $user->isSuperAdmin()) {
+            return User::where('status', 1)->pluck('name', 'id')->toArray();
+        }
+
+        if ($user->isManager()) {
+            return User::where('status', 1)->where('department_id', $user->department_id)->pluck('name', 'id')->toArray();
+        }
+
+        return [$user->id => $user->name];
     }
 
     public static function inDeepArray($key, $value, $ars)

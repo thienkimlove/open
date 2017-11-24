@@ -79,9 +79,10 @@
 $.ajaxSetup({
    headers: { 'X-CSRF-Token' : $('meta[name=csrf_token]').attr('content') }
 });
-
 </script>
 @yield('inline_scripts', '')
+
+@stack('inlinescripts');
 
 @include('vendor.flash.swal')
 

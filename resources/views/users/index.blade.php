@@ -60,6 +60,12 @@
                                 <label class="sr-only" for="">Phân quyền</label>
                                 {!! Form::select('role_id', ['' => '--- Chọn quyền ---'] + Helpers::roleList(), null, ['class' => 'form-control select2']) !!}
                             </div>
+
+                            <div class="form-group m-l-10">
+                                <label class="sr-only" for="">Phòng ban</label>
+                                {!! Form::select('department_id', ['' => '--- Chọn phòng ban ---'] + Helpers::departmentList(), null, ['class' => 'form-control select2']) !!}
+                            </div>
+
                             <div class="form-group m-l-10">
                                 <label class="sr-only" for="">Trạng thái</label>
                                 {!! Form::select('status', ['' => '--- Chọn trạng thái ---'] + config('system.user_status'), null, ['class' => 'form-control']) !!}
@@ -80,12 +86,13 @@
                 <table id="dataTables-users" class="table table-striped table-bordered table-actions-bar">
                     <thead>
                     <tr>
-                        <th width="17%">Tên người dùng</th>
+                        <th width="20%">Tên người dùng</th>
                         <th width="15%">Email</th>
-                        <th width="20%">Phân quyền</th>
-                        <th width="15%">Trạng thái</th>
-                        <th width="18%">Ngày tạo</th>
-                        <th width="15%"></th>
+                        <th width="15%">Phòng ban</th>
+                        <th width="10%">Phân quyền</th>
+                        <th width="10%">Trạng thái</th>
+                        <th width="10%">Ngày tạo</th>
+                        <th width="8%"></th>
                     </tr>
                     </thead>
                 </table>
@@ -138,12 +145,14 @@
                         d.email = $('input[name=email]').val();
                         d.role_id = $('select[name=role_id]').val();
                         d.store_id = $('select[name=store_id]').val();
+                        d.department_id = $('select[name=department_id]').val();
                         d.status = $('select[name=status]').val();
                     }
                 },
                 columns: [
                     {data: 'name', name: 'name'},
                     {data: 'email', name: 'email'},
+                    {data: 'department_name', name: 'department_id'},
                     {data: 'roles', name: 'roles', orderable: false, searchable: false},
                     {data: 'status', name: 'status'},
                     {data: 'created_at', name: 'created_at'},

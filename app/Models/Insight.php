@@ -46,16 +46,28 @@ class Insight extends Model
     public static function getDataTables($request)
     {
         $user = Sentinel::getUser();
-        if ($user->isSuperAdmin()) {
-            $insight = static::select('*');
+
+        $insight = static::query();
+
+        if ($user->isAdmin()) {
+            //
+        } elseif ($user->isManager()) {
+            $insight->whereIn('user_id', $user->getAllUsersInGroup());
         } else {
-            $insight = static::select('*')->where('user_id', $user->id);
+            $insight->where('user_id', $user->id);
         }
 
         return DataTables::of($insight)
             ->filter(function ($query) use ($request) {
                 if ($request->filled('user_id')) {
                     $query->where('user_id', $request->get('user_id'));
+                }
+
+                if ($request->filled('department_id')) {
+                    $departmentId = $request->get('department_id');
+                    $query->whereHas('user', function ($query) use ($departmentId) {
+                       $query->where('department_id', $departmentId);
+                    });
                 }
 
                 if ($request->filled('type')) {
