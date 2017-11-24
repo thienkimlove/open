@@ -23,6 +23,17 @@ class Ad extends Model
         'social_adset_id',
         'created_time',
         'updated_time',
+        'last_report_run'
 
     ];
+
+    public function content()
+    {
+        return $this->belongsTo(Content::class);
+    }
+
+    public function account()
+    {
+        return $this->belongsTo(Account::class);
+    }
 }

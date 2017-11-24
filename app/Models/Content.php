@@ -22,6 +22,7 @@ class Content extends Model
         'min_daily_budget',
         'next_bill_date',
         'spend_cap',
+        'last_report_run'
     ];
 
 

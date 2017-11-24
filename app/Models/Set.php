@@ -28,6 +28,7 @@ class Set extends Model
         'lifetime_imps',
         'start_time',
         'updated_time',
+        'last_report_run'
 
     ];
 
