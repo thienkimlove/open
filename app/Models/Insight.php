@@ -29,7 +29,7 @@ class Insight extends Model
         'impressions',
         'reach',
         'spend',
-
+        'json'
     ];
 
     public function user()

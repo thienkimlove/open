@@ -12,6 +12,7 @@ use Carbon\Carbon;
 use DB;
 use FacebookAds\Api;
 use FacebookAds\Object\User;
+use FacebookAds\Object\Values\AdsInsightsLevelValues;
 use Illuminate\Console\Command;
 
 class GetAccount extends Command
@@ -74,13 +75,8 @@ class GetAccount extends Command
             $start_date = "2016-07-12";
             $end_date = "2016-07-19";
         } else {
-            if ($content->campaigns->count() > 0) {
-                $start_date = Carbon::now()->toDateString();
-                $end_date = Carbon::now()->toDateString();
-            } else {
-                $start_date = Carbon::now()->startOfMonth()->toDateString();
-                $end_date = Carbon::now()->toDateString();
-            }
+            $start_date = Carbon::now()->toDateString();
+            $end_date = Carbon::now()->toDateString();
         }
 
         $params = [
@@ -97,7 +93,7 @@ class GetAccount extends Command
 
         foreach ($campaigns as $campaign) {
 
-            $object = Campaign::updateOrCreate([
+            Campaign::updateOrCreate([
                 'social_id' => $campaign->id,
                 'social_type' => config('system.social_type.facebook')
             ], [
@@ -115,7 +111,6 @@ class GetAccount extends Command
                 'updated_time' => $campaign->updated_time,
             ]);
 
-            $this->getInsightForObject($object, $campaign, config('system.insight.types.campaign'), $params);
         }
 
     }
@@ -146,13 +141,8 @@ class GetAccount extends Command
             $start_date = "2016-07-12";
             $end_date = "2016-07-19";
         } else {
-            if ($content->sets->count() > 0) {
-                $start_date = Carbon::now()->toDateString();
-                $end_date = Carbon::now()->toDateString();
-            } else {
-                $start_date = Carbon::now()->startOfMonth()->toDateString();
-                $end_date = Carbon::now()->toDateString();
-            }
+            $start_date = Carbon::now()->toDateString();
+            $end_date = Carbon::now()->toDateString();
         }
 
         $params = [
@@ -171,7 +161,7 @@ class GetAccount extends Command
 
             if ($campaignForSet->count() > 0) {
 
-                $object = Set::updateOrCreate([
+                Set::updateOrCreate([
                     'social_id' => $set->id,
                     'social_type' => config('system.social_type.facebook')
                 ], [
@@ -194,8 +184,6 @@ class GetAccount extends Command
                     'start_time' => $set->start_time,
                     'updated_time' => $set->updated_time,
                 ]);
-
-                $this->getInsightForObject($object, $set, config('system.insight.types.adset'), $params);
             }
         }
 
@@ -220,13 +208,8 @@ class GetAccount extends Command
             $start_date = "2016-07-12";
             $end_date = "2016-07-19";
         } else {
-            if ($content->ads->count() > 0) {
-                $start_date = Carbon::now()->toDateString();
-                $end_date = Carbon::now()->toDateString();
-            } else {
-                $start_date = Carbon::now()->startOfMonth()->toDateString();
-                $end_date = Carbon::now()->toDateString();
-            }
+            $start_date = Carbon::now()->toDateString();
+            $end_date = Carbon::now()->toDateString();
         }
 
         $params = [
@@ -245,7 +228,7 @@ class GetAccount extends Command
 
             if ($setForAd->count() > 0) {
 
-               $object = Ad::updateOrCreate([
+               Ad::updateOrCreate([
                     'social_id' => $ad->id,
                     'social_type' => config('system.social_type.facebook')
                 ], [
@@ -262,8 +245,6 @@ class GetAccount extends Command
                     'created_time' => $ad->created_time,
                     'updated_time' => $ad->updated_time,
                 ]);
-
-                $this->getInsightForObject($object, $ad, config('system.insight.types.ad'), $params);
             }
         }
     }
@@ -300,6 +281,7 @@ class GetAccount extends Command
                   'object_type' => $type,
                   'social_type' => config('system.social_type.facebook'),
               ];
+              $params['level'] = AdsInsightsLevelValues::ACCOUNT;
         } elseif ($type == config('system.insight.types.campaign')) {
               $checkField = 'campaign_id';
 
@@ -311,6 +293,7 @@ class GetAccount extends Command
                 'object_type' => $type,
                 'social_type' => config('system.social_type.facebook'),
             ];
+            $params['level'] = AdsInsightsLevelValues::CAMPAIGN;
 
         } elseif ($type == config('system.insight.types.adset')) {
             $checkField = 'set_id';
@@ -325,6 +308,8 @@ class GetAccount extends Command
                 'social_type' => config('system.social_type.facebook'),
             ];
 
+            $params['level'] = AdsInsightsLevelValues::ADSET;
+
         } elseif ($type == config('system.insight.types.ad')) {
             $checkField = 'ad_id';
 
@@ -338,9 +323,22 @@ class GetAccount extends Command
                 'object_type' => $type,
                 'social_type' => config('system.social_type.facebook'),
             ];
+
+            $params['level'] = AdsInsightsLevelValues::AD;
         }
 
-        foreach ($adObject->getInsights($fields, $params) as $insight) {
+        $async_job = $adObject->getInsightsAsync($fields, $params);
+
+        $async_job->read();
+
+        while (!$async_job->isComplete()) {
+            sleep(1);
+            $async_job->read();
+        }
+
+        $trueInsights = $async_job->getInsights();
+
+        foreach ($trueInsights as $insight) {
 
             //check if insight for this object existed at special date.
 
@@ -372,6 +370,7 @@ class GetAccount extends Command
     }
 
 
+
     private function getAdAccounts($fbAccount)
     {
         try {
@@ -383,49 +382,35 @@ class GetAccount extends Command
             $fields = $this->getAdAccountFields();
             $accounts = $me->getAdAccounts($fields);
             foreach ($accounts as $account) {
-               $socialId = $account->account_id;
-               $content = Content::updateOrCreate([
-                   'social_id' => $socialId,
-                   'social_type' => config('system.social_type.facebook')
-               ], [
-                   'user_id' => $fbAccount->user_id,
-                   'account_id' => $fbAccount->id,
-                   'social_name' => $account->name,
-                   'amount_spent' => $account->amount_spent,
-                   'balance' => $account->balance,
-                   'currency' => $account->currency,
-                   'min_campaign_group_spend_cap' => $account->min_campaign_group_spend_cap,
-                   'min_daily_budget' => $account->min_daily_budget,
-                   'next_bill_date' => $account->next_bill_date,
-                   'spend_cap' => $account->spend_cap,
-               ]);
+                //checkAccountExisted.
+                $checkAccountExisted = Content::where('social_id', $account->account_id)
+                    ->where('social_type', config('system.social_type.facebook'))
+                    ->get();
 
-                if ($content->social_id == 111084382616439) {
-                    $start_date = "2016-07-12";
-                    $end_date = "2016-07-19";
-                } else {
-                    if ($content->getTotalInsight() > 0) {
-                        $start_date = Carbon::now()->toDateString();
-                        $end_date = Carbon::now()->toDateString();
-                    } else {
-                        $start_date = Carbon::now()->startOfMonth()->toDateString();
-                        $end_date = Carbon::now()->toDateString();
-                    }
+                if ($checkAccountExisted->count() == 0) {
+
+                   $content = Content::create([
+                        'social_id' => $account->account_id,
+                        'social_type' => config('system.social_type.facebook'),
+                        'user_id' => $fbAccount->user_id,
+                        'account_id' => $fbAccount->id,
+                        'social_name' => $account->name,
+                        'amount_spent' => $account->amount_spent,
+                        'balance' => $account->balance,
+                        'currency' => $account->currency,
+                        'min_campaign_group_spend_cap' => $account->min_campaign_group_spend_cap,
+                        'min_daily_budget' => $account->min_daily_budget,
+                        'next_bill_date' => $account->next_bill_date,
+                        'spend_cap' => $account->spend_cap,
+                    ]);
+
+                }   else {
+                    $content = $checkAccountExisted->first();
                 }
 
-                $params = [
-                    'time_range' => [
-                        "since" => $start_date,
-                        "until" => $end_date
-                    ],
-                    //'time_increment' => 1
-                ];
-
-
-               $this->getInsightForObject($content, $account, config('system.insight.types.content'), $params);
-               $this->getCampaignsForAdAccount($account, $content);
-               $this->getAdSetsForAdAccount($account, $content);
-               $this->getAdsForAdAccount($account, $content);
+                $this->getCampaignsForAdAccount($account, $content);
+                $this->getAdSetsForAdAccount($account, $content);
+                $this->getAdsForAdAccount($account, $content);
             }
             DB::commit();
         } catch (\Exception $e) {
@@ -445,5 +430,6 @@ class GetAccount extends Command
         foreach ($fbAccounts as $fbAccount) {
             $this->getAdAccounts($fbAccount);
         }
+
     }
 }
