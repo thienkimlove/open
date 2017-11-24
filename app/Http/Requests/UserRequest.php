@@ -26,6 +26,7 @@ class UserRequest extends FormRequest
     {
         $rules = [
             'name' => 'required|max:255',
+            'department_id' => 'required',
         ];
 
         if ($this->route('user')) {
@@ -46,6 +47,7 @@ class UserRequest extends FormRequest
         return [
             'name.required' => 'Vui lòng không để trống tên người dùng',
             'email.required' => 'Vui lòng không để trống email',
+            'department_id.required' => 'Vui lòng chọn phòng ban',
             'email.email' => 'Sai định dạng email',
         ];
     }

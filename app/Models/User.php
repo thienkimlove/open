@@ -28,7 +28,8 @@ class User extends EloquentUser implements
         'last_login',
         'is_superadmin',
         'phone',
-        'password'
+        'password',
+        'department_id',
     ];
 
     /**
@@ -54,7 +55,7 @@ class User extends EloquentUser implements
 
     public static function getDataTables($request)
     {
-        $user = static::select('id', 'name', 'email', 'status', 'created_at')->with('roles');
+        $user = static::select('id', 'name', 'email', 'status', 'created_at', 'department_id')->with('roles', 'department');
 
         return DataTables::of($user)
             ->filter(function ($query) use ($request) {
@@ -64,6 +65,10 @@ class User extends EloquentUser implements
 
                 if ($request->filled('email')) {
                     $query->where('email', 'like', '%' . $request->get('email') . '%');
+                }
+
+                if ($request->filled('department_id')) {
+                    $query->where('department_id', $request->get('department_id'));
                 }
 
                 if ($request->filled('role_id')) {
@@ -88,6 +93,9 @@ class User extends EloquentUser implements
                 }
 
                 return $roles;
+            })
+            ->addColumn('department_name', function ($user) {
+                return $user->department ? $user->department->name : '';
             })
             ->addColumn('action', function ($user) {
                 return '<a class="table-action-btn" href="' . route('userPermissions.index', $user->id) . '" title="Phân quyền theo permission"><i class="fa fa-lock text-warning"></i></a>
@@ -205,5 +213,53 @@ class User extends EloquentUser implements
     private function permissionIsInherit($value)
     {
         return $value == -1;
+    }
+
+    public function isStaff()
+    {
+        return $this->checkRole('nhan-vien');
+    }
+
+    public function isManager()
+    {
+        return $this->checkRole('truong-phong');
+    }
+
+    public function isAdmin()
+    {
+        return $this->checkRole('admin');
+    }
+
+    public function checkRole($slug)
+    {
+        if ($this->isSuperAdmin()) {
+            return true;
+        }
+
+        $roles = $this->roles->pluck('slug')->toArray();
+
+        if (in_array($slug, $roles)) {
+            return true;
+        }
+
+        return false;
+    }
+
+    public function getAllUsersInGroup()
+    {
+        if ($this->isAdmin() || $this->isSuperAdmin()) {
+            return static::where('status', 1)->pluck('id')->toArray();
+        }
+
+        if ($this->isManager()) {
+            return static::where('status', 1)->where('department_id', $this->department_id)->pluck('id')->toArray();
+        }
+
+        return [$this->id];
+    }
+
+    public function department()
+    {
+        return $this->belongsTo(Department::class);
     }
 }

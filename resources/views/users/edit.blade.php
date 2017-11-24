@@ -60,6 +60,14 @@
                         </div>
 
                         <div class="form-group">
+                            <label class="col-md-3 control-label">Phòng ban</label>
+                            <div class="col-md-9">
+                                {!! Form::select('department_id', ['' => '----- Chọn phòng ban -----'] + Helpers::departmentList(), $user->department_id, ['id' => 'roles', 'class' => 'select2', 'data-placeholder' => 'Chọn phòng ban...', 'required' => 'required']) !!}
+                            </div>
+
+                        </div>
+
+                        <div class="form-group">
                             <label class="col-md-3 control-label">Trạng thái</label>
                             <div class="col-md-9">
                                 {!! Form::checkbox('status', '1', $user->status, ['data-plugin' => 'switchery', 'data-color' => '#81c868']) !!}

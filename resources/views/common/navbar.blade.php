@@ -17,11 +17,12 @@
 
             @if ($currentUser->isSuperAdmin())
                 <li class="has-submenu">
-                    <a href="#"><i class="md md-class"></i>Other</a>
+                    <a href="#"><i class="md md-class"></i>Hệ thống</a>
                     <ul class="submenu">
                         <li><a href="{{ url('/users')}}">User</a></li>
                         <li><a href="{{ url('/roles') }}">Role</a></li>
                         <li><a href="{{ url('/permissions') }}">Permission</a></li>
+                        <li><a href="{{ route('departments.index') }}">Phòng ban</a></li>
                     </ul>
                 </li>
                 @endif

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Account;
+use App\Models\Insight;
 use Carbon\Carbon;
 use Facebook\Exceptions\FacebookSDKException;
 use Facebook\Facebook;
@@ -73,6 +74,98 @@ class BasicController extends Controller
     public function index()
     {
         $user = Sentinel::getUser();
+
+        $data = [];
+        $chart = [];
+        $dataChart = [];
+        $dataByUser = [];
+        $dataTmp = [];
+
+        if ($user->isAdmin()) {
+            $data = Insight::selectRaw('SUM(spend) as total_money, SUM(reach) as total_result, (SUM(spend) / SUM(reach)) as rate')
+                ->whereDate('date', Carbon::today()->toDateString())
+                ->first()->toArray();
+
+            $dataTmp = Insight::join('users', 'insights.user_id', '=', 'users.id')
+                ->join('departments', 'users.department_id', '=', 'departments.id')
+                ->selectRaw('SUM(spend) as money, SUM(reach) as result, (SUM(spend) / SUM(reach)) as rate, departments.name')
+                ->groupBy('department_id')
+                ->get();
+
+            $dataByUser = [
+                0 => '',
+                1 => '',
+                2 => '',
+            ];
+
+            foreach ($dataTmp as $item) {
+                $dataByUser[0] .= ", '".$item->name."'";
+                $dataByUser[1] .= ", ".$item->money;
+                $dataByUser[2] .= ", ".$item->rate;
+            }
+
+            $dataChart = Insight::selectRaw('date, SUM(spend) as total_money, SUM(reach) as total_result, (SUM(spend) / SUM(reach)) as rate')
+                ->groupBy('date')
+                ->orderBy('date', 'desc')
+                ->limit(7)
+                ->get()->toArray();
+        } elseif ($user->isManager()) {
+            $data = Insight::whereIn('user_id', $user->getAllUsersInGroup())
+                ->selectRaw('SUM(spend) as total_money, SUM(reach) as total_result, (SUM(spend) / SUM(reach)) as rate')
+                ->whereDate('date', Carbon::today()->toDateString())
+                ->first()->toArray();
+
+            $dataTmp = Insight::with('user')->whereIn('user_id', $user->getAllUsersInGroup())
+                ->selectRaw('user_id, SUM(spend) as money, SUM(reach) as result, (SUM(spend) / SUM(reach)) as rate')
+                ->groupBy('user_id')
+                ->get();
+
+            $dataByUser = [
+                0 => '',
+                1 => '',
+                2 => '',
+            ];
+
+            foreach ($dataTmp as $item) {
+                $dataByUser[0] .= ", '".$item->user->name."'";
+                $dataByUser[1] .= ", ".$item->money;
+                $dataByUser[2] .= ", ".$item->rate;
+            }
+
+            $dataChart = Insight::whereIn('user_id', $user->getAllUsersInGroup())
+                ->selectRaw('date, SUM(spend) as total_money, SUM(reach) as total_result, (SUM(spend) / SUM(reach)) as rate')
+                ->groupBy('date')
+                ->orderBy('date', 'desc')
+                ->limit(7)
+                ->get()->toArray();
+        } else {
+            $data = Insight::where('user_id', $user->id)
+                ->selectRaw('SUM(spend) as total_money, SUM(reach) as total_result, (SUM(spend) / SUM(reach)) as rate')
+                ->whereDate('date', Carbon::today()->toDateString())
+                ->first()->toArray();
+
+            $dataChart = Insight::where('user_id', $user->id)
+                ->selectRaw('date, SUM(spend) as total_money, SUM(reach) as total_result, (SUM(spend) / SUM(reach)) as rate')
+                ->groupBy('date')
+                ->orderBy('date', 'desc')
+                ->limit(7)
+                ->get()->toArray();
+        }
+
+        $chart = [
+            0 => '',
+            1 => '',
+            2 => '',
+            3 => '',
+        ];
+
+        foreach ($dataChart as $item) {
+            $chart[0] .= ', "'.$item['date'].'"';
+            $chart[1] .= ', '.$item['total_money'];
+            $chart[2] .= ', '.$item['total_result'];
+            $chart[3] .= ', '.$item['rate'];
+        }
+
         $error = null;
         $needGenerateUrl = [];
         $fb = new Facebook([
@@ -120,7 +213,8 @@ class BasicController extends Controller
                 }
             }
         }
-        return view('index', compact('user', 'needGenerateUrl'));
+
+        return view('index', compact('user', 'needGenerateUrl', 'data', 'chart', 'dataByUser'));
     }
 
     /**

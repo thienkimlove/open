@@ -46,22 +46,27 @@
                 <div class="row">
                     <div class="col-sm-12">
                         <form class="form-inline" role="form" id="search-form">
-                            @if (Sentinel::getUser()->isSuperAdmin())
-                                <div class="form-group m-l-10">
-                                    <label class="sr-only" for="">Tên Advertiser</label>
-                                    {!! Form::select('user_id', ['' => '--- Chọn Advertiser ---'] + Helpers::userList(), null, ['class' => 'form-control']) !!}
-                                </div>
+                            @if (Sentinel::getUser()->isAdmin())
+                            <div class="form-group m-l-10">
+                                <label class="sr-only" for="">Phòng ban</label>
+                                {!! Form::select('department_id', ['' => '--- Chọn phòng ban ---'] + Helpers::departmentList(), null, ['class' => 'form-control select2']) !!}
+                            </div>
                             @endif
 
-                                <div class="form-group m-l-10">
-                                    <label class="sr-only" for="">Theo ngày</label>
-                                    <input class="form-control input-daterange-datepicker" type="text" name="date" value="" placeholder="Theo ngày" style="width: 200px;"/>
-                                </div>
+                            <div class="form-group m-l-10">
+                                <label class="sr-only" for="">Tên Advertiser</label>
+                                {!! Form::select('user_id', ['' => '--- Chọn Advertiser ---'] + Helpers::getListUserInGroup(), null, ['class' => 'form-control']) !!}
+                            </div>
 
-                                <div class="form-group m-l-10">
-                                    <label class="sr-only" for="">Loại</label>
-                                    {!! Form::select('type', ['' => '--- Chọn Loại ---'] + config('system.insight.values'), null, ['class' => 'form-control']) !!}
-                                </div>
+                            <div class="form-group m-l-10">
+                                <label class="sr-only" for="">Theo ngày</label>
+                                <input class="form-control input-daterange-datepicker" type="text" name="date" value="" placeholder="Theo ngày" style="width: 200px;"/>
+                            </div>
+
+                            <div class="form-group m-l-10">
+                                <label class="sr-only" for="">Loại</label>
+                                {!! Form::select('type', ['' => '--- Chọn Loại ---'] + config('system.insight.values'), null, ['class' => 'form-control']) !!}
+                            </div>
 
                             <button type="submit" class="btn btn-success waves-effect waves-light m-l-15">Tìm kiếm</button>
                         </form>
@@ -142,6 +147,7 @@
                         d.date = $('input[name=date]').val();
                         d.user_id = $('select[name=user_id]').val();
                         d.type = $('select[name=type]').val();
+                        d.department_id = $('select[name=department_id]').val();
                     }
                 },
                 columns: [

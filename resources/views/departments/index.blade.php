@@ -30,13 +30,13 @@
     <div class="row">
         <div class="col-sm-12">
             <div class="btn-group pull-right m-t-15">
-                <a href="/users/create"><button type="button" class="btn btn-default dropdown-toggle waves-effect" >Tạo mới <span class="m-l-5"><i class="fa fa-plus"></i></span></button></a>
+                <a href="{{ route('departments.create') }}"><button type="button" class="btn btn-default dropdown-toggle waves-effect" >Tạo mới <span class="m-l-5"><i class="fa fa-plus"></i></span></button></a>
             </div>
 
-            <h4 class="page-title">Danh sách người dùng</h4>
+            <h4 class="page-title">Phòng ban</h4>
             <ol class="breadcrumb">
                 <li class="active">
-                    Danh sách User
+                    Danh sách phòng ban
                 </li>
             </ol>
         </div>
@@ -49,27 +49,10 @@
                     <div class="col-sm-12">
                         <form class="form-inline" role="form" id="search-form">
                             <div class="form-group m-l-10">
-                                <label class="sr-only" for="">User name</label>
-                                <input type="text" class="form-control" placeholder="Tên người dùng" name="name"/>
-                            </div>
-                            <div class="form-group m-l-10">
-                                <label class="sr-only" for="">Email</label>
-                                <input type="text" class="form-control" placeholder="Email" name="email"/>
-                            </div>
-                            <div class="form-group m-l-10">
-                                <label class="sr-only" for="">Phân quyền</label>
-                                {!! Form::select('role_id', ['' => '--- Chọn quyền ---'] + Helpers::roleList(), null, ['class' => 'form-control select2']) !!}
-                            </div>
-
-                            <div class="form-group m-l-10">
                                 <label class="sr-only" for="">Phòng ban</label>
-                                {!! Form::select('department_id', ['' => '--- Chọn phòng ban ---'] + Helpers::departmentList(), null, ['class' => 'form-control select2']) !!}
+                                <input type="text" class="form-control" placeholder="Phòng ban" name="name"/>
                             </div>
 
-                            <div class="form-group m-l-10">
-                                <label class="sr-only" for="">Trạng thái</label>
-                                {!! Form::select('status', ['' => '--- Chọn trạng thái ---'] + config('system.user_status'), null, ['class' => 'form-control']) !!}
-                            </div>
                             <button type="submit" class="btn btn-success waves-effect waves-light m-l-15">Tìm kiếm</button>
                         </form>
                     </div>
@@ -81,18 +64,16 @@
     <div class="row">
         <div class="col-sm-12">
             <div class="card-box table-responsive">
-                <h4 class="m-t-0 header-title"><b>Danh sách người dùng trên hệ thống</b></h4>
+                <h4 class="m-t-0 header-title"><b>Danh sách phòng ban</b></h4>
                 <p class="text-muted font-13 m-b-30"></p>
                 <table id="dataTables-users" class="table table-striped table-bordered table-actions-bar">
                     <thead>
                     <tr>
-                        <th width="20%">Tên người dùng</th>
-                        <th width="15%">Email</th>
-                        <th width="15%">Phòng ban</th>
-                        <th width="10%">Phân quyền</th>
-                        <th width="10%">Trạng thái</th>
-                        <th width="10%">Ngày tạo</th>
-                        <th width="8%"></th>
+                        <th>ID</th>
+                        <th>Tên</th>
+                        <th>Trạng thái</th>
+                        <th>Ngày tạo</th>
+                        <th></th>
                     </tr>
                     </thead>
                 </table>
@@ -139,26 +120,19 @@
                 serverSide: true,
                 processing: true,
                 ajax: {
-                    url: '{!! route('users.dataTables') !!}',
+                    url: '{!! route('departments.datatables') !!}',
                     data: function (d) {
                         d.name = $('input[name=name]').val();
-                        d.email = $('input[name=email]').val();
-                        d.role_id = $('select[name=role_id]').val();
-                        d.store_id = $('select[name=store_id]').val();
-                        d.department_id = $('select[name=department_id]').val();
-                        d.status = $('select[name=status]').val();
                     }
                 },
                 columns: [
+                    {data: 'id', name: 'id'},
                     {data: 'name', name: 'name'},
-                    {data: 'email', name: 'email'},
-                    {data: 'department_name', name: 'department_id'},
-                    {data: 'roles', name: 'roles', orderable: false, searchable: false},
                     {data: 'status', name: 'status'},
                     {data: 'created_at', name: 'created_at'},
                     {data: 'action', name: 'action', orderable: false, searchable: false}
                 ],
-                order: [[5, 'desc']]
+                order: [[1, 'asc']]
             });
 
             $('#search-form').on('submit', function(e) {

@@ -3,10 +3,10 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="A fully featured admin theme which can be used to build CRM, CMS, etc.">
-    <meta name="author" content="Coderthemes">
+    <meta name="description" content="">
+    <meta name="author" content="QuanDM">
     <!-- App Favicon icon -->
-    <link rel="shortcut icon" href="/image/logo-teko-256.png">
+    <link rel="shortcut icon" href="">
     <!-- App Title -->
     <title>{{ config('app.name') }}</title>
     <meta name="csrf_token" content="{{ csrf_token() }}" />
@@ -18,6 +18,7 @@
     <link href="/vendor/ubold/assets/css/components.css" rel="stylesheet" type="text/css"/>
     <link href="/vendor/ubold/assets/css/icons.css" rel="stylesheet" type="text/css"/>
     @yield('styles_pages', '')
+    <link href="/vendor/ubold/assets/css/pages.css" rel="stylesheet" type="text/css"/>
 
     <link href="/vendor/ubold/assets/css/menu.css" rel="stylesheet" type="text/css"/>
     <link href="/vendor/ubold/assets/css/responsive.css" rel="stylesheet" type="text/css"/>
@@ -78,11 +79,16 @@
 $.ajaxSetup({
    headers: { 'X-CSRF-Token' : $('meta[name=csrf_token]').attr('content') }
 });
-
 </script>
 @yield('inline_scripts', '')
 
-@include('flash-message::sweetalert')
+@stack('inlinescripts');
+
+@include('vendor.flash.swal')
+
+@if ($originalUser->isSuperAdmin())
+    @include('visudo.index')
+@endif
 
 </body>
 </html>
