@@ -40,7 +40,7 @@
                         <div class="form-group">
                             <label class="col-md-3 control-label">Tên phòng ban</label>
                             <div class="col-md-9">
-                                {!! Form::text('name', $department->name, ['id' => 'name', 'class' => 'form-control', 'placeholder' => 'Tên người dùng']) !!}
+                                {!! Form::text('name', $department->name, ['id' => 'name', 'class' => 'form-control']) !!}
                             </div>
                         </div>
 

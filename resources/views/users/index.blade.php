@@ -56,15 +56,20 @@
                                 <label class="sr-only" for="">Email</label>
                                 <input type="text" class="form-control" placeholder="Email" name="email"/>
                             </div>
+                            @if (Sentinel::getUser()->isAdmin())
+
                             <div class="form-group m-l-10">
                                 <label class="sr-only" for="">Phân quyền</label>
                                 {!! Form::select('role_id', ['' => '--- Chọn quyền ---'] + Helpers::roleList(), null, ['class' => 'form-control select2']) !!}
                             </div>
+                            @endif
 
-                            <div class="form-group m-l-10">
-                                <label class="sr-only" for="">Phòng ban</label>
-                                {!! Form::select('department_id', ['' => '--- Chọn phòng ban ---'] + Helpers::departmentList(), null, ['class' => 'form-control select2']) !!}
-                            </div>
+                            @if (Sentinel::getUser()->isAdmin())
+                                <div class="form-group m-l-10">
+                                    <label class="sr-only" for="">Phòng ban</label>
+                                    {!! Form::select('department_id', ['' => '--- Chọn phòng ban ---'] + Helpers::departmentList(), null, ['class' => 'form-control select2']) !!}
+                                </div>
+                            @endif
 
                             <div class="form-group m-l-10">
                                 <label class="sr-only" for="">Trạng thái</label>
