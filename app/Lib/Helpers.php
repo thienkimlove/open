@@ -2,6 +2,7 @@
 
 namespace App\Lib;
 
+use App\Models\Content;
 use App\Models\Department;
 use App\Models\User;
 use Facades\App\Models\Role;
@@ -23,6 +24,11 @@ class Helpers {
     public static function departmentList()
     {
         return Department::where('status', 1)->pluck('name', 'id')->toArray();
+    }
+
+    public function contentList()
+    {
+        return Content::whereNull('map_user_id')->pluck('name', 'id')->all();
     }
 
     public static function getListUserInGroup()

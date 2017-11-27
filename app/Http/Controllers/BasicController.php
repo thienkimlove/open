@@ -74,12 +74,7 @@ class BasicController extends Controller
     public function index()
     {
         $user = Sentinel::getUser();
-
-        $data = [];
-        $chart = [];
-        $dataChart = [];
         $dataByUser = [];
-        $dataTmp = [];
 
         if ($user->isAdmin()) {
             $data = Insight::selectRaw('SUM(spend) as total_money, SUM(result) as total_result, (SUM(spend) / SUM(result)) as rate')
@@ -176,51 +171,56 @@ class BasicController extends Controller
 
         $error = null;
         $needGenerateUrl = [];
-        $fb = new Facebook([
-            'app_id' => config('system.facebook.app_id'),
-            'app_secret' => config('system.facebook.app_secret'),
-            'default_graph_version' => 'v2.11',
-            'http_client_handler' => 'stream'
-        ]);
-        $fbAuthUrl = $this->getFacebookUrl($fb);
 
-        if (request()->filled('code')) {
-            $helper = $fb->getRedirectLoginHelper();
+        if ($user->isSuperAdmin()) {
+            $fb = new Facebook([
+                'app_id' => config('system.facebook.app_id'),
+                'app_secret' => config('system.facebook.app_secret'),
+                'default_graph_version' => 'v2.11',
+                'http_client_handler' => 'stream'
+            ]);
+            $fbAuthUrl = $this->getFacebookUrl($fb);
 
-            try {
-                $accessToken = (string) $helper->getAccessToken();
-                $client = $fb->getOAuth2Client();
-                $accessTokenLong = $client->getLongLivedAccessToken($accessToken);
-                $response = $fb->get('/me?fields=id,name', $accessTokenLong);
-                $fbUser = $response->getGraphUser();
-                $user = Sentinel::getUser();
-                Account::updateOrCreate([
-                    'social_id' => $fbUser['id'],
-                    'social_type' => config('system.social_type.facebook')
-                ], [
-                    'social_name' => $fbUser['name'],
-                    'user_id' => $user->id,
-                    'api_token' => $accessTokenLong,
-                    'api_token_start_date' => Carbon::now()->toDateTimeString(),
-                    'status' => true,
-                ]);
+            if (request()->filled('code')) {
+                $helper = $fb->getRedirectLoginHelper();
 
-                return redirect('/');
+                try {
+                    $accessToken = (string) $helper->getAccessToken();
+                    $client = $fb->getOAuth2Client();
+                    $accessTokenLong = $client->getLongLivedAccessToken($accessToken);
+                    $response = $fb->get('/me?fields=id,name', $accessTokenLong);
+                    $fbUser = $response->getGraphUser();
+                    $user = Sentinel::getUser();
+                    Account::updateOrCreate([
+                        'social_id' => $fbUser['id'],
+                        'social_type' => config('system.social_type.facebook')
+                    ], [
+                        'social_name' => $fbUser['name'],
+                        'user_id' => $user->id,
+                        'api_token' => $accessTokenLong,
+                        'api_token_start_date' => Carbon::now()->toDateTimeString(),
+                        'status' => true,
+                    ]);
 
-            } catch(FacebookSDKException $e) {
-                Log::error($e->getMessage());
+                    return redirect('/');
+
+                } catch(FacebookSDKException $e) {
+                    Log::error($e->getMessage());
+                }
             }
-        }
 
-        if ($user->accounts->count() == 0) {
-            $needGenerateUrl['create'] = $fbAuthUrl;
-        } else {
-            foreach ($user->accounts as $account) {
-                if ($account->social_type == config('system.social_type.facebook') && $account->api_token_start_date->addDays(55) <= Carbon::now()) {
-                    $needGenerateUrl[$account->social_id] = $fbAuthUrl;
+            if ($user->accounts->count() == 0) {
+                $needGenerateUrl['create'] = $fbAuthUrl;
+            } else {
+                foreach ($user->accounts as $account) {
+                    if ($account->social_type == config('system.social_type.facebook') && $account->api_token_start_date->addDays(55) <= Carbon::now()) {
+                        $needGenerateUrl[$account->social_id] = $fbAuthUrl;
+                    }
                 }
             }
         }
+
+
 
         return view('index', compact('user', 'needGenerateUrl', 'data', 'chart', 'dataByUser'));
     }

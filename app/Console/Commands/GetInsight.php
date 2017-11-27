@@ -202,6 +202,18 @@ class GetInsight extends Command
                 }
             }
 
+            $result = 0;
+
+            if (in_array($insight['objective'], array_keys(config('system.insight.map'))) && isset($insight['unique_actions'])) {
+                foreach ($insight['unique_actions'] as $action) {
+                    if ($action['action_type'] == config('system.insight.map.'.$insight['objective'])) {
+                        $result = $action['value'];
+                        break;
+                    }
+                }
+            }
+
+            $insertData['result'] = $result;
             $insertData['json'] = json_encode($insight, true);
 
             Insight::create($insertData);
