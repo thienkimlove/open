@@ -26,6 +26,13 @@ return [
             3 => 'AdSet',
             4 => 'Ad',
         ],
+
+        'map' => [
+            'VIDEO_VIEWS' => 'video_view',
+            'LINK_CLICKS' => 'link_click',
+            'MESSAGES' => 'link_click',
+            'MULTIPLE' => 'link_click',
+        ]
     ],
 
     'facebook' => [

@@ -54,7 +54,7 @@
                         <div class="form-group">
                             <label class="col-md-3 control-label">Roles</label>
                             <div class="col-md-9">
-                                {!! Form::select('roles[]', Helpers::roleList(), null, ['id' => 'roles', 'multiple' => true, 'class' => 'select2 select2-multiple', 'data-placeholder' => 'Chọn quyền...']) !!}
+                                {!! Form::select('roles[]', Helpers::roleList(), null, ['id' => 'roles', 'class' => 'select2', 'data-placeholder' => 'Chọn quyền...']) !!}
                             </div>
 
                         </div>
