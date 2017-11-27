@@ -54,7 +54,7 @@
                         <div class="form-group">
                             <label class="col-md-3 control-label">Roles</label>
                             <div class="col-md-9">
-                                {!! Form::select('roles[]', Helpers::roleList(), null, ['id' => 'roles', 'class' => 'select2', 'data-placeholder' => 'Chọn quyền...']) !!}
+                                {!! Form::select('roles[]', Helpers::roleList(), null, ['id' => 'roles', 'class' => 'form-control', 'data-placeholder' => 'Chọn quyền...']) !!}
                             </div>
 
                         </div>
@@ -62,7 +62,7 @@
                         <div class="form-group">
                             <label class="col-md-3 control-label">Phòng ban</label>
                             <div class="col-md-9">
-                                {!! Form::select('department_id', ['' => '----- Chọn phòng ban -----'] + Helpers::departmentList(), null, ['id' => 'roles', 'class' => 'select2', 'data-placeholder' => 'Chọn phòng ban...', 'required' => 'required']) !!}
+                                {!! Form::select('department_id', ['' => '----- Chọn phòng ban -----'] + Helpers::departmentList(), null, ['id' => 'department_id', 'class' => 'select2', 'data-placeholder' => 'Chọn phòng ban...']) !!}
                             </div>
 
                         </div>
@@ -109,5 +109,18 @@
 @endsection
 
 @section('inline_scripts')
+<script>
+    (function($){
+        $('.select2').select2();
 
+        $('#roles').on('change', function(e) {
+            if ('Admin' != $("#roles option:selected").text()) {
+                $('#department_id').attr('required', true);
+            } else {
+                $('#department_id').attr('required', false);
+
+            }
+        });
+    })(jQuery);
+</script>
 @endsection

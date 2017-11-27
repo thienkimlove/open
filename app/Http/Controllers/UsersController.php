@@ -51,19 +51,7 @@ class UsersController extends Controller
 
     public function update(UserRequest $request, $id)
     {
-        $user = Sentinel::findById($id);
-
-        if (! $user) {
-            throw new ModelNotFoundException('User not found.');
-        }
-
-        if (! isset($request->status)) {
-            $request->merge([
-                'status' => 0,
-            ]);
-        }
-
-        $user->update($request->all());
+        $request->save($id);
 
         flash()->success('Thành công', 'Cập nhật thành công!');
 

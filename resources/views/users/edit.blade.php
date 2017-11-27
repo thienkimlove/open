@@ -54,7 +54,7 @@
                         <div class="form-group">
                             <label class="col-md-3 control-label">Roles</label>
                             <div class="col-md-9">
-                                {!! Form::select('roles[]', Helpers::roleList(), $user->roles()->pluck('id')->toArray(), ['id' => 'roles', 'class' => 'select2', 'data-placeholder' => 'Choose Roles...']) !!}
+                                {!! Form::select('roles[]', Helpers::roleList(), $user->roles()->pluck('id')->toArray(), ['id' => 'roles', 'class' => 'form-control', 'data-placeholder' => 'Choose Roles...']) !!}
                             </div>
 
                         </div>
@@ -62,7 +62,7 @@
                         <div class="form-group">
                             <label class="col-md-3 control-label">Phòng ban</label>
                             <div class="col-md-9">
-                                {!! Form::select('department_id', ['' => '----- Chọn phòng ban -----'] + Helpers::departmentList(), $user->department_id, ['id' => 'roles', 'class' => 'select2', 'data-placeholder' => 'Chọn phòng ban...', 'required' => 'required']) !!}
+                                {!! Form::select('department_id', ['' => '----- Chọn phòng ban -----'] + Helpers::departmentList(), $user->department_id, ['id' => 'department_id', 'class' => 'select2', 'data-placeholder' => 'Chọn phòng ban...']) !!}
                             </div>
 
                         </div>
@@ -111,9 +111,23 @@
     <script type="text/javascript" src="/vendor/ubold/assets/plugins/autocomplete/countries.js"></script>
     <script type="text/javascript" src="/vendor/ubold/assets/pages/autocomplete.js"></script>
 
-    <script type="text/javascript" src="/vendor/ubold/assets/pages/jquery.form-advanced.init.js"></script>
+    {{--<script type="text/javascript" src="/vendor/ubold/assets/pages/jquery.form-advanced.init.js"></script>--}}
 @endsection
 
 @section('inline_scripts')
+    <script>
+        (function($){
+            $('.select2').select2();
+
+            $('#roles').on('change', function(e) {
+                if ('Admin' != $("#roles option:selected").text()) {
+                    $('#department_id').attr('required', true);
+                } else {
+                    $('#department_id').attr('required', false);
+
+                }
+            });
+        })(jQuery);
+    </script>
 
 @endsection
