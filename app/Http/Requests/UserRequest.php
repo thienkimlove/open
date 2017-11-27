@@ -17,6 +17,14 @@ class UserRequest extends FormRequest
         return true;
     }
 
+    protected function getValidatorInstance()
+    {
+        return parent::getValidatorInstance()->after(function ($validator) {
+            // Call the after method of the FormRequest (see below)
+            $this->after($validator);
+        });
+    }
+
     /**
      * Get the validation rules that apply to the request.
      *
@@ -26,7 +34,6 @@ class UserRequest extends FormRequest
     {
         $rules = [
             'name' => 'required|max:255',
-            'department_id' => 'required',
         ];
 
         if ($this->route('user')) {
@@ -42,6 +49,13 @@ class UserRequest extends FormRequest
         return array_merge($rules, $optionalRules);
     }
 
+    public function after($validator)
+    {
+        if ((!in_array(1, $this->roles)) && (! $this->filled('department_id'))) {
+            $validator->errors()->add('department_id.required', 'Vui lòng chọn phòng ban');
+        }
+    }
+
     public function messages()
     {
         return [
@@ -54,12 +68,16 @@ class UserRequest extends FormRequest
 
     public function store()
     {
-        if (! isset($this->status)) {
-            User::create(array_merge($this->all(), [
+        if (!$this->filled('status')) {
+            $this->merge([
                 'status' => 0,
-            ]));
+            ]);
+        }
 
-            return $this;
+        if (!$this->filled('department_id')) {
+            $this->merge([
+                'department_id' => 0,
+            ]);
         }
 
         User::create(array_merge($this->all(), ['password' => md5(time())]));
@@ -71,12 +89,16 @@ class UserRequest extends FormRequest
     {
         $user = User::findOrFail($id);
 
-        if (! isset($this->status)) {
-            $user->update(array_merge($this->all(), [
-                'status' => 0
-            ]));
+        if (!$this->filled('status')) {
+            $this->merge([
+                'status' => 0,
+            ]);
+        }
 
-            return $this;
+        if (!$this->filled('department_id')) {
+            $this->merge([
+                'department_id' => 0,
+            ]);
         }
 
         $user->update($this->all());
