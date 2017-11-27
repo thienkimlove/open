@@ -26,9 +26,14 @@ class Helpers {
         return Department::where('status', 1)->pluck('name', 'id')->toArray();
     }
 
-    public function contentList()
+    public static function contentListForCreate()
     {
-        return Content::whereNull('map_user_id')->pluck('name', 'id')->all();
+        return Content::whereNull('map_user_id')->pluck('social_name', 'id')->all();
+    }
+
+    public static function contentListForUpdate()
+    {
+        return Content::pluck('social_name', 'id')->all();
     }
 
     public static function getListUserInGroup()

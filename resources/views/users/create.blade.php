@@ -72,7 +72,7 @@
                         <div class="form-group">
                             <label class="col-md-3 control-label">Danh sách Tài Khoản Quảng Cáo</label>
                             <div class="col-md-9">
-                                {!! Form::select('contents[]', Helpers::contentList(), null, ['id' => 'contents', 'multiple' => true, 'class' => 'select2 select2-multiple', 'data-placeholder' => 'Choose Ad Accounts...']) !!}
+                                {!! Form::select('contents[]',  ['' => '----- Chọn Tài Khoản -----'] + Helpers::contentListForCreate(), null, ['id' => 'contents', 'multiple' => true, 'class' => 'select2 select2-multiple', 'data-placeholder' => 'Choose Ad Accounts...']) !!}
                             </div>
 
                         </div>
@@ -133,6 +133,16 @@
 
             }
         });
+
+        $('#contents').on('change', function(e) {
+            if ('Admin' != $("#contents option:selected").text()) {
+                $('#contents').attr('required', true);
+            } else {
+                $('#contents').attr('required', false);
+
+            }
+        });
+
     })(jQuery);
 </script>
 @endsection

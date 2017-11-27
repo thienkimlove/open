@@ -25,7 +25,8 @@ class Campaign extends Model
         'start_time',
         'stop_time',
         'updated_time',
-        'last_report_run'
+        'last_report_run',
+        'active'
 
     ];
 

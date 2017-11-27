@@ -68,6 +68,15 @@
                         </div>
 
                         <div class="form-group">
+                            <label class="col-md-3 control-label">Danh sách Tài Khoản Quảng Cáo</label>
+                            <div class="col-md-9">
+                                {!! Form::select('contents[]',  ['' => '----- Chọn Tài Khoản -----'] + Helpers::contentListForUpdate(), $user->maps()->pluck('id')->all(), ['id' => 'contents', 'multiple' => true, 'class' => 'select2 select2-multiple', 'data-placeholder' => 'Choose Ad Accounts...']) !!}
+                            </div>
+
+                        </div>
+
+
+                        <div class="form-group">
                             <label class="col-md-3 control-label">Trạng thái</label>
                             <div class="col-md-9">
                                 {!! Form::checkbox('status', '1', $user->status, ['data-plugin' => 'switchery', 'data-color' => '#81c868']) !!}
@@ -124,9 +133,18 @@
                     $('#department_id').attr('required', true);
                 } else {
                     $('#department_id').attr('required', false);
+                }
+            });
+
+            $('#contents').on('change', function(e) {
+                if ('Admin' != $("#contents option:selected").text()) {
+                    $('#contents').attr('required', true);
+                } else {
+                    $('#contents').attr('required', false);
 
                 }
             });
+
         })(jQuery);
     </script>
 

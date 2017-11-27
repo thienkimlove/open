@@ -31,6 +31,7 @@ class Insight extends Model
         'spend',
         'json',
         'result',
+        'active'
     ];
 
     public function user()
@@ -48,7 +49,7 @@ class Insight extends Model
     {
         $user = Sentinel::getUser();
 
-        $insight = static::with('content', 'ad', 'set', 'campaign', 'user', 'account');
+        $insight = static::with('content', 'ad', 'set', 'campaign', 'user', 'account')->where('active', true);
 
         if ($user->isAdmin()) {
             //

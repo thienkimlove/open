@@ -136,8 +136,6 @@ class GetInsight extends Command
                 'campaign_id' => $object->campaign_id,
                 'set_id' => $object->set_id,
                 'ad_id' => $object->id,
-                'object_type' => $object_type,
-                'social_type' => config('system.social_type.facebook'),
             ];
 
         } elseif ($type == AdsInsightsLevelValues::ADSET) {
@@ -151,8 +149,6 @@ class GetInsight extends Command
                 'content_id' => $object->content_id,
                 'campaign_id' => $object->campaign_id,
                 'set_id' => $object->id,
-                'object_type' => $object_type,
-                'social_type' => config('system.social_type.facebook'),
             ];
 
         } elseif ($type == AdsInsightsLevelValues::CAMPAIGN) {
@@ -165,8 +161,6 @@ class GetInsight extends Command
                 'account_id' => $object->account_id,
                 'content_id' => $object->content_id,
                 'campaign_id' => $object->id,
-                'object_type' => $object_type,
-                'social_type' => config('system.social_type.facebook'),
             ];
 
         } elseif ($type == AdsInsightsLevelValues::ACCOUNT) {
@@ -174,50 +168,45 @@ class GetInsight extends Command
             $checkField = 'content_id';
             $object_type = config('system.insight.types.content');
             $insertData = [
-                'user_id' => $object->user_id,
+                'user_id' => $object->map_user_id,
                 'account_id' => $object->account_id,
-                'content_id' => $object->id,
-                'object_type' => $object_type,
-                'social_type' => config('system.social_type.facebook'),
+                'content_id' => $object->content_id,
             ];
         }
 
-        $checkExisted = Insight::where($checkField, $object->id)
-            ->where('object_type', $object_type)
-            ->where('social_type', config('system.social_type.facebook'))
-            ->where('date', $insightDate)
-            ->count();
-
         $fields = $this->getInsightFields();
 
-        if ($checkExisted == 0) {
-
-            foreach ($fields as $field) {
-                if ($field == 'date_start') {
-                    $insertData['date'] = $insightDate;
-                } elseif (in_array($field, ['account_id', 'campaign_id', 'adset_id', 'ad_id'])) {
-                    $insertData['social_'.$field] = isset($insight[$field]) ? $insight[$field] : null;
-                } elseif (in_array($field, ['clicks', 'impressions', 'reach', 'spend'])) {
-                    $insertData[$field] = $insight[$field];
-                }
+        foreach ($fields as $field) {
+            if ($field == 'date_start') {
+                $insertData['date'] = $insightDate;
+            } elseif (in_array($field, ['account_id', 'campaign_id', 'adset_id', 'ad_id'])) {
+                $insertData['social_'.$field] = isset($insight[$field]) ? $insight[$field] : null;
+            } elseif (in_array($field, ['clicks', 'impressions', 'reach', 'spend'])) {
+                $insertData[$field] = $insight[$field];
             }
-
-            $result = 0;
-
-            if (in_array($insight['objective'], array_keys(config('system.insight.map'))) && isset($insight['unique_actions'])) {
-                foreach ($insight['unique_actions'] as $action) {
-                    if ($action['action_type'] == config('system.insight.map.'.$insight['objective'])) {
-                        $result = $action['value'];
-                        break;
-                    }
-                }
-            }
-
-            $insertData['result'] = $result;
-            $insertData['json'] = json_encode($insight, true);
-
-            Insight::create($insertData);
         }
+
+        $result = 0;
+
+        if (in_array($insight['objective'], array_keys(config('system.insight.map'))) && isset($insight['unique_actions'])) {
+            foreach ($insight['unique_actions'] as $action) {
+                if ($action['action_type'] == config('system.insight.map.'.$insight['objective'])) {
+                    $result = $action['value'];
+                    break;
+                }
+            }
+        }
+
+        $insertData['result'] = $result;
+        $insertData['active'] = true;
+        $insertData['json'] = json_encode($insight, true);
+
+        Insight::updateOrCreate([
+            $checkField => $object->id,
+            'object_type' => $object_type,
+            'date'=> $insightDate,
+            'social_type' => config('system.social_type.facebook')
+        ],  $insertData);
 
         $object->last_report_run = Carbon::now()->toDateTimeString();
         $object->save();
@@ -257,6 +246,34 @@ class GetInsight extends Command
         }
     }
 
+    public function deactiveInsight()
+    {
+        $deactiveContents = Content::whereNull('map_user_id')->pluck('id')->all();
+        $deactiveCampaigns = Campaign::where('active', false)->pluck('id')->all();
+        $deactiveSets = Set::where('active', false)->pluck('id')->all();
+        $deactiveAds = Ad::where('active', false)->pluck('id')->all();
+
+        Insight::where(function($q) use ($deactiveContents) {
+            $q->whereIn('content_id', $deactiveContents);
+            $q->where('object_type', config('system.insight.types.content'));
+            $q->where('social_type', config('system.social_type.facebook'));
+        })->orWhere(function($q) use ($deactiveCampaigns) {
+            $q->whereIn('content_id', $deactiveCampaigns);
+            $q->where('object_type', config('system.insight.types.campaign'));
+            $q->where('social_type', config('system.social_type.facebook'));
+        })->orWhere(function($q) use ($deactiveSets) {
+            $q->whereIn('content_id', $deactiveSets);
+            $q->where('object_type', config('system.insight.types.adset'));
+            $q->where('social_type', config('system.social_type.facebook'));
+        })->orWhere(function($q) use ($deactiveAds) {
+            $q->whereIn('content_id', $deactiveAds);
+            $q->where('object_type', config('system.insight.types.ad'));
+            $q->where('social_type', config('system.social_type.facebook'));
+        })->update([
+            'active' => false
+        ]);
+    }
+
     /**
      * Execute the console command.
      *
@@ -280,7 +297,8 @@ class GetInsight extends Command
             $objects = Ad::whereNull('last_report_run')
                 ->where('account_id', $fbAccount->id)
                 ->orWhereRaw("DATE(last_report_run) < CURDATE()")
-                ->limit(10)
+                ->where('active', true)
+                ->limit(50)
                 ->get();
 
             $this->getBatchObject($fb, $objects, AdsInsightsLevelValues::AD);
@@ -291,16 +309,18 @@ class GetInsight extends Command
             $objects = Set::whereNull('last_report_run')
                 ->where('account_id', $fbAccount->id)
                 ->orWhereRaw("DATE(last_report_run) < CURDATE()")
-                ->limit(10)
+                ->where('active', true)
+                ->limit(50)
                 ->get();
 
            $this->getBatchObject($fb, $objects, AdsInsightsLevelValues::ADSET);
 
-            sleep(10);
+            sleep(50);
 
             $objects = Campaign::whereNull('last_report_run')
                 ->where('account_id', $fbAccount->id)
                 ->orWhereRaw("DATE(last_report_run) < CURDATE()")
+                ->where('active', true)
                 ->limit(10)
                 ->get();
 
@@ -312,10 +332,13 @@ class GetInsight extends Command
             $objects = Content::whereNull('last_report_run')
                 ->where('account_id', $fbAccount->id)
                 ->orWhereRaw("DATE(last_report_run) < CURDATE()")
+                ->whereNotNull('map_user_id')
                 ->limit(10)
                 ->get();
 
             $this->getBatchObject($fb, $objects, AdsInsightsLevelValues::ACCOUNT);
+
+            $this->deactiveInsight();
 
         }
     }

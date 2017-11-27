@@ -52,10 +52,16 @@ class User extends EloquentUser implements
         return $this->hasMany(Account::class);
     }
 
+    public function maps()
+    {
+        return $this->hasMany(Content::class, 'map_user_id',
+            'id');
+    }
+
 
     public static function getDataTables($request)
     {
-        $user = static::select('id', 'name', 'email', 'status', 'created_at', 'department_id')->with('roles', 'department');
+        $user = static::select('id', 'name', 'email', 'status', 'created_at', 'department_id')->with('roles', 'department', 'maps');
 
         $currentUser = Sentinel::getUser();
 
@@ -102,13 +108,22 @@ class User extends EloquentUser implements
 
                 return $roles;
             })
+            ->addColumn('contents', function ($user) {
+                $contents = '';
+
+                foreach ($user->maps as $content) {
+                    $contents .= '&nbsp;&nbsp;<span style="background-color: #e3e3e3">' . $content->social_name . '</span>';
+                }
+
+                return $contents;
+            })
             ->addColumn('department_name', function ($user) {
                 return $user->department ? $user->department->name : '';
             })
             ->addColumn('action', function ($user) {
                 return '<a class="table-action-btn" title="Chỉnh sửa người dùng" href="' . route('users.edit', $user->id) . '"><i class="fa fa-pencil text-success"></i></a>';
             })
-            ->rawColumns(['roles', 'status', 'action', 'email', 'name'])
+            ->rawColumns(['roles', 'contents', 'status', 'action', 'email', 'name'])
             ->make(true);
     }
 

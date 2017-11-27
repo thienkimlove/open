@@ -23,7 +23,8 @@ class Ad extends Model
         'social_adset_id',
         'created_time',
         'updated_time',
-        'last_report_run'
+        'last_report_run',
+        'active'
 
     ];
 

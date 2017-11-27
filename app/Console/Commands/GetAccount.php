@@ -88,8 +88,14 @@ class GetAccount extends Command
         ];
 
         $fields = $this->getCampaignFields();
-
         $campaigns = $adAccount->getCampaigns($fields, $params);
+        $currentMapUserId = Content::whereNotNull('map_user_id')->pluck('map_user_id')->all();
+
+        //de active all campaign not longer map to a users and current user.
+        Campaign::where('active', true)
+            ->whereNotIn('user_id', $currentMapUserId)
+            ->orWhere('user_id', $content->map_user_id)
+            ->update(['active' => false]);
 
         foreach ($campaigns as $campaign) {
 
@@ -97,7 +103,7 @@ class GetAccount extends Command
                 'social_id' => $campaign->id,
                 'social_type' => config('system.social_type.facebook')
             ], [
-                'user_id' => $content->user_id,
+                'user_id' => $content->map_user_id,
                 'account_id' => $content->account_id,
                 'content_id' => $content->id,
                 'social_name' => $campaign->name,
@@ -109,6 +115,7 @@ class GetAccount extends Command
                 'start_time' => $campaign->start_time,
                 'stop_time' => $campaign->stop_time,
                 'updated_time' => $campaign->updated_time,
+                'active' => true
             ]);
 
         }
@@ -155,6 +162,15 @@ class GetAccount extends Command
 
         $sets = $adAccount->getAdSets($fields, $params);
 
+        $currentMapUserId = Content::whereNotNull('map_user_id')->pluck('map_user_id')->all();
+
+        //de active all sets not longer map to a users and current user.
+
+        Set::where('active', true)
+            ->whereNotIn('user_id', $currentMapUserId)
+            ->orWhere('user_id', $content->map_user_id)
+            ->update(['active' => false]);
+
         foreach ($sets as $set) {
 
             $campaignForSet = Campaign::where('social_id', $set->campaign_id)->where('social_type',  config('system.social_type.facebook'))->get();
@@ -183,6 +199,7 @@ class GetAccount extends Command
                     'lifetime_imps' => $set->lifetime_imps,
                     'start_time' => $set->start_time,
                     'updated_time' => $set->updated_time,
+                    'active' => true
                 ]);
             }
         }
@@ -222,6 +239,17 @@ class GetAccount extends Command
 
         $ads = $adAccount->getAds($fields, $params);
 
+
+        $currentMapUserId = Content::whereNotNull('map_user_id')->pluck('map_user_id')->all();
+
+        //de active all sets not longer map to a users and current user.
+
+        Ad::where('active', true)
+            ->whereNotIn('user_id', $currentMapUserId)
+            ->orWhere('user_id', $content->map_user_id)
+            ->update(['active' => false]);
+
+
         foreach ($ads as $ad) {
 
             $setForAd = Set::where('social_id', $ad->adset_id)->where('social_type',  config('system.social_type.facebook'))->get();
@@ -244,6 +272,7 @@ class GetAccount extends Command
                     'social_adset_id' => $ad->adset_id,
                     'created_time' => $ad->created_time,
                     'updated_time' => $ad->updated_time,
+                    'active' => true
                 ]);
             }
         }
@@ -265,111 +294,6 @@ class GetAccount extends Command
             'spend',
         ];
     }
-
-    public function getInsightForObject($object, $adObject, $type, $params)
-    {
-        $params['time_increment'] = 1;
-
-        $fields = $this->getInsightFields();
-
-        if ($type == config('system.insight.types.content')) {
-              $checkField = 'content_id';
-              $insertData = [
-                  'user_id' => $object->user_id,
-                  'account_id' => $object->account_id,
-                  'content_id' => $object->id,
-                  'object_type' => $type,
-                  'social_type' => config('system.social_type.facebook'),
-              ];
-              $params['level'] = AdsInsightsLevelValues::ACCOUNT;
-        } elseif ($type == config('system.insight.types.campaign')) {
-              $checkField = 'campaign_id';
-
-            $insertData = [
-                'user_id' => $object->user_id,
-                'account_id' => $object->account_id,
-                'content_id' => $object->content_id,
-                'campaign_id' => $object->id,
-                'object_type' => $type,
-                'social_type' => config('system.social_type.facebook'),
-            ];
-            $params['level'] = AdsInsightsLevelValues::CAMPAIGN;
-
-        } elseif ($type == config('system.insight.types.adset')) {
-            $checkField = 'set_id';
-
-            $insertData = [
-                'user_id' => $object->user_id,
-                'account_id' => $object->account_id,
-                'content_id' => $object->content_id,
-                'campaign_id' => $object->campaign_id,
-                'set_id' => $object->id,
-                'object_type' => $type,
-                'social_type' => config('system.social_type.facebook'),
-            ];
-
-            $params['level'] = AdsInsightsLevelValues::ADSET;
-
-        } elseif ($type == config('system.insight.types.ad')) {
-            $checkField = 'ad_id';
-
-            $insertData = [
-                'user_id' => $object->user_id,
-                'account_id' => $object->account_id,
-                'content_id' => $object->content_id,
-                'campaign_id' => $object->campaign_id,
-                'set_id' => $object->set_id,
-                'ad_id' => $object->id,
-                'object_type' => $type,
-                'social_type' => config('system.social_type.facebook'),
-            ];
-
-            $params['level'] = AdsInsightsLevelValues::AD;
-        }
-
-        $async_job = $adObject->getInsightsAsync($fields, $params);
-
-        $async_job->read();
-
-        while (!$async_job->isComplete()) {
-            sleep(1);
-            $async_job->read();
-        }
-
-        $trueInsights = $async_job->getInsights();
-
-        foreach ($trueInsights as $insight) {
-
-            //check if insight for this object existed at special date.
-
-            $insightDate = Carbon::parse($insight->date_start)->toDateString();
-
-            $checkExisted = Insight::where($checkField, $object->id)
-                ->where('object_type', $type)
-                ->where('social_type', config('system.social_type.facebook'))
-                ->where('date', $insightDate)
-                ->count();
-
-            if ($checkExisted == 0) {
-
-                $insertData['date'] = $insightDate;
-
-                $insertData['social_account_id'] = $insight->account_id;
-                $insertData['social_campaign_id'] = $insight->campaign_id;
-                $insertData['social_adset_id'] = $insight->adset_id;
-                $insertData['social_ad_id'] = $insight->ad_id;
-
-                $insertData['clicks'] = $insight->clicks;
-                $insertData['impressions'] = $insight->impressions;
-                $insertData['reach'] = $insight->reach;
-                $insertData['spend'] = $insight->spend;
-
-                Insight::create($insertData);
-            }
-        }
-    }
-
-
 
     private function getAdAccounts($fbAccount)
     {
@@ -404,13 +328,16 @@ class GetAccount extends Command
                         'spend_cap' => $account->spend_cap,
                     ]);
 
-                }   else {
+                } else {
                     $content = $checkAccountExisted->first();
                 }
 
-                $this->getCampaignsForAdAccount($account, $content);
-                $this->getAdSetsForAdAccount($account, $content);
-                $this->getAdsForAdAccount($account, $content);
+                if ($content->map_user_id) {
+                    $this->getCampaignsForAdAccount($account, $content);
+                    $this->getAdSetsForAdAccount($account, $content);
+                    $this->getAdsForAdAccount($account, $content);
+                }
+
             }
             DB::commit();
         } catch (\Exception $e) {

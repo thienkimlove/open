@@ -91,9 +91,10 @@
                 <table id="dataTables-users" class="table table-striped table-bordered table-actions-bar">
                     <thead>
                     <tr>
-                        <th width="20%">Tên người dùng</th>
+                        <th width="10%">Tên người dùng</th>
                         <th width="15%">Email</th>
                         <th width="15%">Phòng ban</th>
+                        <th width="10%">Danh sách TKQC</th>
                         <th width="10%">Phân quyền</th>
                         <th width="10%">Trạng thái</th>
                         <th width="10%">Ngày tạo</th>
@@ -158,12 +159,13 @@
                     {data: 'name', name: 'name'},
                     {data: 'email', name: 'email'},
                     {data: 'department_name', name: 'department_id'},
+                    {data: 'contents', name: 'contents'},
                     {data: 'roles', name: 'roles', orderable: false, searchable: false},
                     {data: 'status', name: 'status'},
                     {data: 'created_at', name: 'created_at'},
                     {data: 'action', name: 'action', orderable: false, searchable: false}
                 ],
-                order: [[5, 'desc']]
+                order: [[6, 'desc']]
             });
 
             $('#search-form').on('submit', function(e) {

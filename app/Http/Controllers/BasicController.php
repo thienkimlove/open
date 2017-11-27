@@ -80,10 +80,12 @@ class BasicController extends Controller
             $data = Insight::selectRaw('SUM(spend) as total_money, SUM(result) as total_result, (SUM(spend) / SUM(result)) as rate')
                 ->objectAd()
                 ->whereDate('date', Carbon::today()->toDateString())
+                ->where('active', true)
                 ->first()->toArray();
 
             $dataTmp = Insight::join('users', 'insights.user_id', '=', 'users.id')
                 ->join('departments', 'users.department_id', '=', 'departments.id')
+                ->where('insights.active', true)
                 ->selectRaw('SUM(spend) as money, SUM(result) as result, (SUM(spend) / SUM(result)) as rate, departments.name')
                 ->objectAd()
                 ->groupBy('department_id')
@@ -103,18 +105,21 @@ class BasicController extends Controller
 
             $dataChart = Insight::selectRaw('date, SUM(spend) as total_money, SUM(result) as total_result, (SUM(spend) / SUM(result)) as rate')
                 ->objectAd()
+                ->where('active', true)
                 ->groupBy('date')
                 ->orderBy('date', 'desc')
                 ->limit(7)
                 ->get()->toArray();
         } elseif ($user->isManager()) {
             $data = Insight::whereIn('user_id', $user->getAllUsersInGroup())
+                ->where('active', true)
                 ->selectRaw('SUM(spend) as total_money, SUM(result) as total_result, (SUM(spend) / SUM(result)) as rate')
                 ->whereDate('date', Carbon::today()->toDateString())
                 ->objectAd()
                 ->first()->toArray();
 
             $dataTmp = Insight::with('user')->whereIn('user_id', $user->getAllUsersInGroup())
+                ->where('active', true)
                 ->selectRaw('user_id, SUM(spend) as money, SUM(result) as result, (SUM(spend) / SUM(result)) as rate')
                 ->objectAd()
                 ->groupBy('user_id')
@@ -133,6 +138,7 @@ class BasicController extends Controller
             }
 
             $dataChart = Insight::whereIn('user_id', $user->getAllUsersInGroup())
+                ->where('active', true)
                 ->selectRaw('date, SUM(spend) as total_money, SUM(result) as total_result, (SUM(spend) / SUM(result)) as rate')
                 ->objectAd()
                 ->groupBy('date')
@@ -141,12 +147,14 @@ class BasicController extends Controller
                 ->get()->toArray();
         } else {
             $data = Insight::where('user_id', $user->id)
+                ->where('active', true)
                 ->selectRaw('SUM(spend) as total_money, SUM(result) as total_result, (SUM(spend) / SUM(result)) as rate')
                 ->whereDate('date', Carbon::today()->toDateString())
                 ->objectAd()
                 ->first()->toArray();
 
             $dataChart = Insight::where('user_id', $user->id)
+                ->where('active', true)
                 ->selectRaw('date, SUM(spend) as total_money, SUM(result) as total_result, (SUM(spend) / SUM(result)) as rate')
                 ->objectAd()
                 ->groupBy('date')
