@@ -57,6 +57,14 @@ class User extends EloquentUser implements
     {
         $user = static::select('id', 'name', 'email', 'status', 'created_at', 'department_id')->with('roles', 'department');
 
+        $currentUser = Sentinel::getUser();
+
+        if ($currentUser->isAdmin()) {
+            //
+        } elseif ($currentUser->isManager()) {
+            $user->whereIn('id', $currentUser->getAllUsersInGroup());
+        }
+
         return DataTables::of($user)
             ->filter(function ($query) use ($request) {
                 if ($request->filled('name')) {
@@ -98,8 +106,7 @@ class User extends EloquentUser implements
                 return $user->department ? $user->department->name : '';
             })
             ->addColumn('action', function ($user) {
-                return '<a class="table-action-btn" href="' . route('userPermissions.index', $user->id) . '" title="Phân quyền theo permission"><i class="fa fa-lock text-warning"></i></a>
-                        <a class="table-action-btn" title="Chỉnh sửa người dùng" href="' . route('users.edit', $user->id) . '"><i class="fa fa-pencil text-success"></i></a>';
+                return '<a class="table-action-btn" title="Chỉnh sửa người dùng" href="' . route('users.edit', $user->id) . '"><i class="fa fa-pencil text-success"></i></a>';
             })
             ->rawColumns(['roles', 'status', 'action', 'email', 'name'])
             ->make(true);
@@ -126,6 +133,18 @@ class User extends EloquentUser implements
     public function isSuperAdmin()
     {
         return (bool)$this->is_superadmin;
+    }
+
+    public static function create(array $attributes = [])
+    {
+        $static = new static();
+
+        return Sentinel::register(
+            array_merge($attributes, [
+                'password' => bcrypt(str_random(32)),
+            ]), true)
+            ->setActivation(true)
+            ->updateRoles($static->getRoleIds($attributes));
     }
 
     public function update(array $attributes = [], array $options = [])

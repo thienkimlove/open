@@ -29,7 +29,8 @@ class Insight extends Model
         'impressions',
         'reach',
         'spend',
-        'json'
+        'json',
+        'result',
     ];
 
     public function user()
@@ -85,5 +86,15 @@ class Insight extends Model
                 return $insight->spend."VND";
             })
             ->make(true);
+    }
+
+    public function scopeObjectAd($query)
+    {
+        return $query->where('object_type', config('system.insight.types.ad'));
+    }
+
+    public function getJsonDataAttribute()
+    {
+        return json_decode($this->getAttribute('json'), true);
     }
 }

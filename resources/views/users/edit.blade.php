@@ -54,7 +54,7 @@
                         <div class="form-group">
                             <label class="col-md-3 control-label">Roles</label>
                             <div class="col-md-9">
-                                {!! Form::select('roles[]', Helpers::roleList(), $user->roles()->pluck('id')->toArray(), ['id' => 'roles', 'multiple' => true, 'class' => 'select2 select2-multiple', 'data-placeholder' => 'Choose Roles...']) !!}
+                                {!! Form::select('roles[]', Helpers::roleList(), $user->roles()->pluck('id')->toArray(), ['id' => 'roles', 'class' => 'select2', 'data-placeholder' => 'Choose Roles...']) !!}
                             </div>
 
                         </div>
