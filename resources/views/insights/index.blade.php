@@ -85,12 +85,12 @@
                     <thead>
                     <tr>
                         <th>Date</th>
-                        <th>UserId</th>
-                        <th>AccountId</th>
-                        <th>AdAccountId</th>
-                        <th>CampaignId</th>
-                        <th>AdSetId</th>
-                        <th>AdId</th>
+                        <th>User</th>
+                        <th>Account</th>
+                        <th>AdAccount</th>
+                        <th>Campaign</th>
+                        <th>AdSet</th>
+                        <th>Ad</th>
                         <th>Clicks</th>
                         <th>Impressions</th>
                         <th>Spend</th>
@@ -135,7 +135,7 @@
 @section('inline_scripts')
     <script type="text/javascript">
         $('.select2').select2();
-
+        $.fn.dataTable.ext.errMode = 'none';
         $(function () {
             var datatable = $("#dataTables-insight").DataTable({
                 searching: false,
@@ -153,12 +153,12 @@
                 columns: [
                     {data: 'date', name: 'date', orderable: false, searchable: false},
 
-                    {data: 'user_id', name: 'user_id'},
-                    {data: 'account_id', name: 'account_id'},
-                    {data: 'content_id', name: 'content_id'},
-                    {data: 'campaign_id', name: 'campaign_id'},
-                    {data: 'set_id', name: 'set_id'},
-                    {data: 'ad_id', name: 'ad_id'},
+                    {data: 'user.name', name: 'user.name'},
+                    {data: 'content.social_name', name: 'content.social_name'},
+                    {data: 'ad.social_name', name: 'ad.social_name'},
+                    {data: 'campaign.social_name', name: 'campaign.social_name'},
+                    {data: 'set.social_name', name: 'set.social_name'},
+                    {data: 'ad.social_name', name: 'ad.social_name'},
 
                     {data: 'clicks', name: 'clicks'},
                     {data: 'impressions', name: 'impressions'},

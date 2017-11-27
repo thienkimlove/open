@@ -48,7 +48,7 @@ class Insight extends Model
     {
         $user = Sentinel::getUser();
 
-        $insight = static::query();
+        $insight = static::with('content', 'ad', 'set', 'campaign', 'user', 'account');
 
         if ($user->isAdmin()) {
             //
@@ -83,7 +83,13 @@ class Insight extends Model
             })->editColumn('object_type', function ($insight) {
                 return config('system.insight.values.'.$insight->object_type);
             })->editColumn('spend', function ($insight) {
-                return $insight->spend."VND";
+                return number_format($insight->spend)." đ";
+            })
+            ->editColumn('clicks', function ($insight) {
+                return number_format($insight->clicks);
+            })
+            ->editColumn('impressions', function ($insight) {
+                return number_format($insight->impressions);
             })
             ->make(true);
     }
@@ -96,5 +102,25 @@ class Insight extends Model
     public function getJsonDataAttribute()
     {
         return json_decode($this->getAttribute('json'), true);
+    }
+
+    public function campaign()
+    {
+        return $this->belongsTo(Campaign::class);
+    }
+
+    public function set()
+    {
+        return $this->belongsTo(Set::class);
+    }
+
+    public function ad()
+    {
+        return $this->belongsTo(Ad::class);
+    }
+
+    public function content()
+    {
+        return $this->belongsTo(Content::class);
     }
 }
