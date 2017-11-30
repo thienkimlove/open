@@ -27,6 +27,11 @@ class BasicController extends Controller
         return view('notice');
     }
 
+    public function privacy()
+    {
+        return view('privacy');
+    }
+
     public function redirectToSSO()
     {
         return Socialite::driver('google')->redirect();

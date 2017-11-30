@@ -16,6 +16,7 @@ Route::get('login', 'BasicController@redirectToSSO')->name('login');
 Route::get('logout', ['uses' => 'BasicController@logout', 'as' => 'logout']);
 Route::get('callback', 'BasicController@handleSSOCallback')->name('callback');
 Route::get('notice', 'BasicController@notice')->name('notice');
+Route::get('privacy', 'BasicController@privacy')->name('privacy');
 
 Route::group(['middleware' => 'acl'], function() {
 
