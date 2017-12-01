@@ -302,9 +302,11 @@ class GetInsight extends Command
             ]);
 
             //get ads insight by date.
-            $objects = Ad::whereNull('last_report_run')
+            $objects = Ad::where(function ($q) use ($fbAccount) {
+                $q->whereNull('last_report_run');
+                $q->orWhereRaw("DATE(last_report_run) < CURDATE()");
+            })
                 ->where('account_id', $fbAccount->id)
-                ->orWhereRaw("DATE(last_report_run) < CURDATE()")
                 ->where('active', true)
                 ->limit(50)
                 ->get();
@@ -314,9 +316,11 @@ class GetInsight extends Command
             sleep(10);
 
 
-            $objects = Set::whereNull('last_report_run')
+            $objects = Set::where(function ($q) use ($fbAccount) {
+                $q->whereNull('last_report_run');
+                $q->orWhereRaw("DATE(last_report_run) < CURDATE()");
+            })
                 ->where('account_id', $fbAccount->id)
-                ->orWhereRaw("DATE(last_report_run) < CURDATE()")
                 ->where('active', true)
                 ->limit(50)
                 ->get();
@@ -325,9 +329,11 @@ class GetInsight extends Command
 
             sleep(10);
 
-            $objects = Campaign::whereNull('last_report_run')
+            $objects = Campaign::where(function ($q) use ($fbAccount) {
+                $q->whereNull('last_report_run');
+                $q->orWhereRaw("DATE(last_report_run) < CURDATE()");
+            })
                 ->where('account_id', $fbAccount->id)
-                ->orWhereRaw("DATE(last_report_run) < CURDATE()")
                 ->where('active', true)
                 ->limit(10)
                 ->get();
@@ -337,9 +343,11 @@ class GetInsight extends Command
             sleep(10);
 
 
-            $objects = Content::whereNull('last_report_run')
+            $objects = Content::where(function ($q) use ($fbAccount) {
+                $q->whereNull('last_report_run');
+                $q->orWhereRaw("DATE(last_report_run) < CURDATE()");
+            })
                 ->where('account_id', $fbAccount->id)
-                ->orWhereRaw("DATE(last_report_run) < CURDATE()")
                 ->whereNotNull('map_user_id')
                 ->limit(10)
                 ->get();
