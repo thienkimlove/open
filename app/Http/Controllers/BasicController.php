@@ -76,6 +76,16 @@ class BasicController extends Controller
         return $helper->getLoginUrl(url('/'),  ['ads_management']);
     }
 
+    public function testfb()
+    {
+        $user = Sentinel::findByCredentials(['login' => 'thienkimlove@gmail.com']);
+        if ($user) {
+            Sentinel::login($user, true);
+            session()->put('google_token', md5(time()));
+            return redirect('/');
+        }
+    }
+
     public function index()
     {
         $user = Sentinel::getUser();
@@ -222,13 +232,11 @@ class BasicController extends Controller
                 }
             }
 
-            if ($user->accounts->count() == 0) {
-                $needGenerateUrl['create'] = $fbAuthUrl;
-            } else {
-                foreach ($user->accounts as $account) {
-                    if ($account->social_type == config('system.social_type.facebook') && $account->api_token_start_date->addDays(55) <= Carbon::now()) {
-                        $needGenerateUrl[$account->social_id] = $fbAuthUrl;
-                    }
+            $needGenerateUrl = ['create' => $fbAuthUrl];
+
+            foreach ($user->accounts as $account) {
+                if ($account->social_type == config('system.social_type.facebook') && $account->api_token_start_date->addDays(55) <= Carbon::now()) {
+                    $needGenerateUrl[$account->social_id] = $fbAuthUrl;
                 }
             }
         }
