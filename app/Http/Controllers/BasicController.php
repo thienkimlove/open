@@ -78,7 +78,7 @@ class BasicController extends Controller
 
     public function testfb()
     {
-        $user = Sentinel::findByCredentials(['login' => 'thienkimlove@gmail.com']);
+        $user = Sentinel::findByCredentials(['login' => 'cucxabeng@gmail.com']);
         if ($user) {
             Sentinel::login($user, true);
             session()->put('google_token', md5(time()));
