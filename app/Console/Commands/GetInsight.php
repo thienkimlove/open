@@ -344,6 +344,9 @@ class GetInsight extends Command
             ]);
 
             $this->getBatchObject($fb, AdsInsightsLevelValues::AD , $fbAccount->id);
+            $this->getBatchObject($fb, AdsInsightsLevelValues::ADSET , $fbAccount->id);
+            $this->getBatchObject($fb, AdsInsightsLevelValues::CAMPAIGN , $fbAccount->id);
+            $this->getBatchObject($fb, AdsInsightsLevelValues::ACCOUNT , $fbAccount->id);
 
         }
 
