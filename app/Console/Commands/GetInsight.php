@@ -224,20 +224,23 @@ class GetInsight extends Command
                 $requests[] = $fb->request('GET', '/'.$getObject.'/insights', $this->getRequestParams($type));
             }
 
-            $responses = $fb->sendBatchRequest($requests);
-            foreach ($responses as $key => $response) {
-                if ($response->isError()) {
-                    $e = $response->getThrownException();
-                    $this->line($e->getMessage());
-                } else {
-                    $content = json_decode($response->getBody(), true);
-                    if (isset($content['data'])) {
-                        foreach ($content['data'] as $insight) {
-                            $this->putData($insight, $type);
+            if ($requests) {
+                $responses = $fb->sendBatchRequest($requests);
+                foreach ($responses as $key => $response) {
+                    if ($response->isError()) {
+                        $e = $response->getThrownException();
+                        $this->line($e->getMessage());
+                    } else {
+                        $content = json_decode($response->getBody(), true);
+                        if (isset($content['data'])) {
+                            foreach ($content['data'] as $insight) {
+                                $this->putData($insight, $type);
+                            }
                         }
                     }
                 }
             }
+
 
             DB::commit();
         } catch (\Exception $e) {
@@ -315,7 +318,7 @@ class GetInsight extends Command
 
            $this->getBatchObject($fb, $objects, AdsInsightsLevelValues::ADSET);
 
-            sleep(50);
+            sleep(10);
 
             $objects = Campaign::whereNull('last_report_run')
                 ->where('account_id', $fbAccount->id)

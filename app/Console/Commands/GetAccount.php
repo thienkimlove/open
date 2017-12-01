@@ -306,31 +306,22 @@ class GetAccount extends Command
             $fields = $this->getAdAccountFields();
             $accounts = $me->getAdAccounts($fields);
             foreach ($accounts as $account) {
-                //checkAccountExisted.
-                $checkAccountExisted = Content::where('social_id', $account->account_id)
-                    ->where('social_type', config('system.social_type.facebook'))
-                    ->get();
 
-                if ($checkAccountExisted->count() == 0) {
-
-                   $content = Content::create([
-                        'social_id' => $account->account_id,
-                        'social_type' => config('system.social_type.facebook'),
-                        'user_id' => $fbAccount->user_id,
-                        'account_id' => $fbAccount->id,
-                        'social_name' => $account->name,
-                        'amount_spent' => $account->amount_spent,
-                        'balance' => $account->balance,
-                        'currency' => $account->currency,
-                        'min_campaign_group_spend_cap' => $account->min_campaign_group_spend_cap,
-                        'min_daily_budget' => $account->min_daily_budget,
-                        'next_bill_date' => $account->next_bill_date,
-                        'spend_cap' => $account->spend_cap,
-                    ]);
-
-                } else {
-                    $content = $checkAccountExisted->first();
-                }
+                $content = Content::updateOrCreate([
+                    'social_id' => $account->account_id,
+                    'social_type' => config('system.social_type.facebook')
+                ], [
+                    'user_id' => $fbAccount->user_id,
+                    'account_id' => $fbAccount->id,
+                    'social_name' => $account->name,
+                    'amount_spent' => $account->amount_spent,
+                    'balance' => $account->balance,
+                    'currency' => $account->currency,
+                    'min_campaign_group_spend_cap' => $account->min_campaign_group_spend_cap,
+                    'min_daily_budget' => $account->min_daily_budget,
+                    'next_bill_date' => $account->next_bill_date,
+                    'spend_cap' => $account->spend_cap,
+                ]);
 
                 if ($content->map_user_id) {
                     $this->getCampaignsForAdAccount($account, $content);
