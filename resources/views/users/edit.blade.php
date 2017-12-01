@@ -128,22 +128,7 @@
         (function($){
             $('.select2').select2();
 
-            $('#roles').on('change', function(e) {
-                if ('Admin' != $("#roles option:selected").text()) {
-                    $('#department_id').attr('required', true);
-                } else {
-                    $('#department_id').attr('required', false);
-                }
-            });
-
-            $('#contents').on('change', function(e) {
-                if ('Admin' != $("#contents option:selected").text()) {
-                    $('#contents').attr('required', true);
-                } else {
-                    $('#contents').attr('required', false);
-
-                }
-            });
+          
 
         })(jQuery);
     </script>
