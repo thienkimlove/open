@@ -30,7 +30,10 @@ class Kernel extends ConsoleKernel
         // $schedule->command('inspire')
         //          ->hourly();
         $schedule->command('get:account')
-            ->dailyAt('08:00');
+        ->dailyAt('08:00');
+
+        $schedule->command('get:insight')
+            ->hourly();
     }
 
     /**

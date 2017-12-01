@@ -121,14 +121,11 @@ class GetInsight extends Command
     {
         //check if insight for this object existed at special date.
         $insightDate = Carbon::parse($insight['date_start'])->toDateString();
-
-        $object_type = null;
+        $object_type = config('system.insight.types.'.$type);
 
         if ($type == AdsInsightsLevelValues::AD) {
             $object = Ad::where('social_id', $insight['ad_id'])->first();
             $checkField = 'ad_id';
-            $object_type = config('system.insight.types.ad');
-
             $insertData = [
                 'user_id' => $object->user_id,
                 'account_id' => $object->account_id,
@@ -141,7 +138,7 @@ class GetInsight extends Command
         } elseif ($type == AdsInsightsLevelValues::ADSET) {
             $object = Set::where('social_id', $insight['adset_id'])->first();
             $checkField = 'set_id';
-            $object_type = config('system.insight.types.adset');
+
 
             $insertData = [
                 'user_id' => $object->user_id,
@@ -154,7 +151,7 @@ class GetInsight extends Command
         } elseif ($type == AdsInsightsLevelValues::CAMPAIGN) {
             $object = Campaign::where('social_id', $insight['campaign_id'])->first();
             $checkField = 'campaign_id';
-            $object_type = config('system.insight.types.campaign');
+
 
             $insertData = [
                 'user_id' => $object->user_id,
@@ -166,7 +163,6 @@ class GetInsight extends Command
         } elseif ($type == AdsInsightsLevelValues::ACCOUNT) {
             $object = Content::where('social_id', $insight['account_id'])->first();
             $checkField = 'content_id';
-            $object_type = config('system.insight.types.content');
             $insertData = [
                 'user_id' => $object->map_user_id,
                 'account_id' => $object->account_id,
@@ -222,59 +218,105 @@ class GetInsight extends Command
         }
     }
 
-    private function getBatchObject($fb, $objects, $type)
+    private function getBatchObject($fb, $type, $accountId)
     {
-        try {
-            $requests = [];
 
-            foreach ($objects as $object) {
-                $getObject = ($type == AdsInsightsLevelValues::ACCOUNT)  ? 'act_'.$object->social_id : $object->social_id;
-                $requests[] = $fb->request('GET', '/'.$getObject.'/insights', $this->getRequestParams($type));
-            }
+        if ($type == AdsInsightsLevelValues::AD) {
+            $objects = Ad::where(function ($q)  use ($accountId) {
+                $q->whereNull('last_report_run');
+                $q->orWhereRaw("DATE(last_report_run) < CURDATE()");
+            })
+                ->where('active', true)
+                ->where('account_id', $accountId)
+                ->limit(50)
+                ->get();
 
-            if ($requests) {
+        } elseif ($type == AdsInsightsLevelValues::ADSET) {
+            $objects = Set::where(function ($q)  use ($accountId) {
+                $q->whereNull('last_report_run');
+                $q->orWhereRaw("DATE(last_report_run) < CURDATE()");
+            })
+                ->where('active', true)
+                ->where('account_id', $accountId)
+                ->limit(50)
+                ->get();
+
+        } elseif ($type == AdsInsightsLevelValues::CAMPAIGN) {
+            $objects = Campaign::where(function ($q)  use ($accountId) {
+                $q->whereNull('last_report_run');
+                $q->orWhereRaw("DATE(last_report_run) < CURDATE()");
+            })
+                ->where('active', true)
+                ->where('account_id', $accountId)
+                ->limit(50)
+                ->get();
+
+        } elseif ($type == AdsInsightsLevelValues::ACCOUNT) {
+            $objects = Content::where(function ($q) use ($accountId) {
+                $q->whereNull('last_report_run');
+                $q->orWhereRaw("DATE(last_report_run) < CURDATE()");
+            })
+                ->whereNotNull('map_user_id')
+                ->where('account_id', $accountId)
+                ->limit(10)
+                ->get();
+        }
+
+
+        if ($objects->count() > 0) {
+            try {
+                $requests = [];
+
+                foreach ($objects as $object) {
+                    $getObject = ($type == AdsInsightsLevelValues::ACCOUNT)  ? 'act_'.$object->social_id : $object->social_id;
+                    $requests[] = $fb->request('GET', '/'.$getObject.'/insights', $this->getRequestParams($type));
+                }
+
                 $responses = $fb->sendBatchRequest($requests);
+
                 foreach ($responses as $key => $response) {
                     if ($response->isError()) {
                         $e = $response->getThrownException();
                         $this->line($e->getMessage());
                     } else {
+                        $this->line('Working with Fb Response..');
+                        $this->line($response->getBody());
                         $content = json_decode($response->getBody(), true);
-                        if (isset($content['data'])) {
+                        if (!empty($content['data'])) {
                             foreach ($content['data'] as $insight) {
                                 $this->putData($insight, $type);
                             }
                         }
                     }
                 }
+            } catch (\Exception $e) {
+                $this->line($e->getMessage());
             }
-        } catch (\Exception $e) {
-
-            $this->line($e->getMessage());
         }
+
     }
 
-    public function deactiveInsight()
+    public function deActiveInsight()
     {
-        $deactiveContents = Content::whereNull('map_user_id')->pluck('id')->all();
-        $deactiveCampaigns = Campaign::where('active', false)->pluck('id')->all();
-        $deactiveSets = Set::where('active', false)->pluck('id')->all();
-        $deactiveAds = Ad::where('active', false)->pluck('id')->all();
+        $deActiveContents = Content::whereNull('map_user_id')->pluck('id')->all();
+        $deActiveCampaigns = Campaign::where('active', false)->pluck('id')->all();
+        $deActiveSets = Set::where('active', false)->pluck('id')->all();
+        $deActiveAds = Ad::where('active', false)->pluck('id')->all();
 
-        Insight::where(function($q) use ($deactiveContents) {
-            $q->whereIn('content_id', $deactiveContents);
-            $q->where('object_type', config('system.insight.types.content'));
+        Insight::where(function($q) use ($deActiveContents) {
+            $q->whereIn('content_id', $deActiveContents);
+            $q->where('object_type', config('system.insight.types.account'));
             $q->where('social_type', config('system.social_type.facebook'));
-        })->orWhere(function($q) use ($deactiveCampaigns) {
-            $q->whereIn('content_id', $deactiveCampaigns);
+        })->orWhere(function($q) use ($deActiveCampaigns) {
+            $q->whereIn('content_id', $deActiveCampaigns);
             $q->where('object_type', config('system.insight.types.campaign'));
             $q->where('social_type', config('system.social_type.facebook'));
-        })->orWhere(function($q) use ($deactiveSets) {
-            $q->whereIn('content_id', $deactiveSets);
+        })->orWhere(function($q) use ($deActiveSets) {
+            $q->whereIn('content_id', $deActiveSets);
             $q->where('object_type', config('system.insight.types.adset'));
             $q->where('social_type', config('system.social_type.facebook'));
-        })->orWhere(function($q) use ($deactiveAds) {
-            $q->whereIn('content_id', $deactiveAds);
+        })->orWhere(function($q) use ($deActiveAds) {
+            $q->whereIn('content_id', $deActiveAds);
             $q->where('object_type', config('system.insight.types.ad'));
             $q->where('social_type', config('system.social_type.facebook'));
         })->update([
@@ -301,61 +343,10 @@ class GetInsight extends Command
                 'default_access_token' => $fbAccount->api_token
             ]);
 
-            //get ads insight by date.
-            $objects = Ad::where(function ($q) use ($fbAccount) {
-                $q->whereNull('last_report_run');
-                $q->orWhereRaw("DATE(last_report_run) < CURDATE()");
-            })
-                ->where('account_id', $fbAccount->id)
-                ->where('active', true)
-                ->limit(50)
-                ->get();
-
-            $this->getBatchObject($fb, $objects, AdsInsightsLevelValues::AD);
-
-            sleep(10);
-
-
-            $objects = Set::where(function ($q) use ($fbAccount) {
-                $q->whereNull('last_report_run');
-                $q->orWhereRaw("DATE(last_report_run) < CURDATE()");
-            })
-                ->where('account_id', $fbAccount->id)
-                ->where('active', true)
-                ->limit(50)
-                ->get();
-
-           $this->getBatchObject($fb, $objects, AdsInsightsLevelValues::ADSET);
-
-            sleep(10);
-
-            $objects = Campaign::where(function ($q) use ($fbAccount) {
-                $q->whereNull('last_report_run');
-                $q->orWhereRaw("DATE(last_report_run) < CURDATE()");
-            })
-                ->where('account_id', $fbAccount->id)
-                ->where('active', true)
-                ->limit(10)
-                ->get();
-
-            $this->getBatchObject($fb, $objects, AdsInsightsLevelValues::CAMPAIGN);
-
-            sleep(10);
-
-
-            $objects = Content::where(function ($q) use ($fbAccount) {
-                $q->whereNull('last_report_run');
-                $q->orWhereRaw("DATE(last_report_run) < CURDATE()");
-            })
-                ->where('account_id', $fbAccount->id)
-                ->whereNotNull('map_user_id')
-                ->limit(10)
-                ->get();
-
-            $this->getBatchObject($fb, $objects, AdsInsightsLevelValues::ACCOUNT);
-
-            $this->deactiveInsight();
+            $this->getBatchObject($fb, AdsInsightsLevelValues::AD , $fbAccount->id);
 
         }
+
+        $this->deactiveInsight();
     }
 }

@@ -15,7 +15,7 @@ return [
 
     'insight' => [
         'types' => [
-            'content' => 1,
+            'account' => 1,
             'campaign' => 2,
             'adset' => 3,
             'ad' => 4,

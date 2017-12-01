@@ -52,9 +52,5 @@ class Content extends Model
         return $this->hasMany(Ad::class);
     }
 
-    public function getTotalInsight()
-    {
-        return Insight::where('content_id', $this->id)->where('social_type', config('system.social_type.facebook'))->where('object_type', config('system.insight.types.content'))->count();
-    }
 
 }
