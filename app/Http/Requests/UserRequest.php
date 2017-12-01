@@ -52,13 +52,13 @@ class UserRequest extends FormRequest
 
     public function after($validator)
     {
-        if ((!in_array(1, $this->roles)) && (! $this->filled('department_id'))) {
+      /*  if ((!in_array(1, $this->roles)) && (! $this->filled('department_id'))) {
             $validator->errors()->add('department_id.required', 'Vui lòng chọn phòng ban');
         }
 
         if ((!in_array(1, $this->roles)) && (! $this->filled('contents'))) {
             $validator->errors()->add('contents.required', 'Vui lòng chọn ít nhất một tài khoản quảng cáo');
-        }
+        }*/
     }
 
     public function messages()
