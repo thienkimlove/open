@@ -113,12 +113,16 @@ class UserRequest extends FormRequest
             ]);
         }
 
+
+
         $user->update($this->all());
 
 
         if ($this->filled('contents')) {
 
             Content::whereNull('map_user_id')->whereIn('id', $this->get('contents'))->update(['map_user_id' => $user->id]);
+        } else {
+            Content::where('map_user_id', $user->id)->update(['map_user_id' => null]);
         }
 
         return $this;
