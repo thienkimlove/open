@@ -201,22 +201,30 @@ class GetInsight extends Command
         $insertData['active'] = true;
         $insertData['json'] = json_encode($insight, true);
 
-        Insight::updateOrCreate([
-            $checkField => $object->id,
-            'object_type' => $object_type,
-            'date'=> $insightDate,
-            'social_type' => config('system.social_type.facebook')
-        ],  $insertData);
 
-        $object->last_report_run = Carbon::now()->toDateTimeString();
-        $object->save();
+        try {
+            Insight::updateOrCreate([
+                $checkField => $object->id,
+                'object_type' => $object_type,
+                'date'=> $insightDate,
+                'social_type' => config('system.social_type.facebook')
+            ],  $insertData);
+
+            $object->last_report_run = Carbon::now()->toDateTimeString();
+            $object->save();
+
+            DB::commit();
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            $this->line($e->getMessage());
+            //dd($insertData);
+        }
     }
 
     private function getBatchObject($fb, $objects, $type)
     {
         try {
-            DB::beginTransaction();
-
             $requests = [];
 
             foreach ($objects as $object) {
@@ -240,11 +248,8 @@ class GetInsight extends Command
                     }
                 }
             }
-
-
-            DB::commit();
         } catch (\Exception $e) {
-            DB::rollBack();
+
             $this->line($e->getMessage());
         }
     }
