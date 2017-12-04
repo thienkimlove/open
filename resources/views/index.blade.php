@@ -16,25 +16,6 @@
 
     </div>
 
-    <div class="row">
-
-        <div class="col-sm-12">
-            @if ($needGenerateUrl)
-                <p class="text-muted page-title-alt">
-
-                    <b>Allow System manage your Facebook Ads Accounts? Click to button below to start :</b><br/>
-
-                    @foreach ($needGenerateUrl as $key => $url)
-                        <a href="{{$url}}" class="btn azm-social azm-btn azm-border-bottom azm-facebook"><i class="fa fa-facebook"></i> Log in with Facebook</a>
-                    @endforeach
-
-                </p>
-            @endif
-        </div>
-
-    </div>
-
-
     @if ($currentUser->isAdmin())
         @include('dashboard._admin')
     @elseif ($currentUser->isManager())

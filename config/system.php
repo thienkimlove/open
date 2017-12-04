@@ -44,6 +44,10 @@ return [
         'facebook' => 1,
     ],
 
+    'social_type_values' => [
+        1 => 'Facebook',
+    ],
+
 
 
 

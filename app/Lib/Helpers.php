@@ -8,8 +8,36 @@ use App\Models\User;
 use Facades\App\Models\Role;
 use Carbon\Carbon;
 use Sentinel;
+use Facebook\Facebook;
 
 class Helpers {
+
+    public static function getAdAccountFields() {
+        return array(
+            'account_id',
+            'name',
+            'amount_spent',
+            'balance',
+            'currency',
+            'min_campaign_group_spend_cap',
+            'min_daily_budget',
+            'next_bill_date',
+            'spend_cap',
+        );
+    }
+
+    public static function getRedirectFb()
+    {
+        $fb = new Facebook([
+            'app_id' => config('system.facebook.app_id'),
+            'app_secret' => config('system.facebook.app_secret'),
+            'default_graph_version' => 'v2.11',
+            'http_client_handler' => 'stream'
+        ]);
+
+        $helper = $fb->getRedirectLoginHelper();
+        return $helper->getLoginUrl(url('/'),  ['ads_management']);
+    }
 
     public static function roleList()
     {
@@ -25,6 +53,7 @@ class Helpers {
     {
         return Department::where('status', 1)->pluck('name', 'id')->toArray();
     }
+
 
     public static function contentListForCreate()
     {
