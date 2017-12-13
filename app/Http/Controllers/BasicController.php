@@ -188,18 +188,18 @@ class BasicController extends Controller
                 ->join('users', 'contents.map_user_id', '=', 'users.id')
                 ->selectRaw('SUM(reports.spend) as total_money, SUM(reports.result) as total_result, (SUM(reports.spend) / SUM(reports.result)) as rate')
                 ->whereDate('reports.date', Carbon::today()->toDateString())
-                ->where('elements.social_level', config('system.insight.types.ad'));
+                ->where('elements.social_level', config('system.insight.types.campaign'));
 
             $dataTmp = Report::join('elements', 'reports.element_id', '=', 'elements.id')
                 ->join('contents', 'elements.content_id', '=', 'contents.id')
                 ->join('users', 'contents.map_user_id', '=', 'users.id')
                 ->selectRaw('contents.map_user_id as user_id, users.name as user_name, SUM(reports.spend) as money, SUM(reports.result) as result, (SUM(reports.spend) / SUM(reports.result)) as rate')
-                ->where('elements.social_level', config('system.insight.types.ad'));
+                ->where('elements.social_level', config('system.insight.types.campaign'));
 
             $dataChart = Report::join('elements', 'reports.element_id', '=', 'elements.id')
                 ->join('contents', 'elements.content_id', '=', 'contents.id')
                 ->join('users', 'contents.map_user_id', '=', 'users.id')
-                ->where('elements.social_level', config('system.insight.types.ad'));
+                ->where('elements.social_level', config('system.insight.types.campaign'));
 
 
 
