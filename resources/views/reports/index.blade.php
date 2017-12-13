@@ -10,6 +10,10 @@
             min-height: 400px;
             overflow-y: auto;
         }
+
+        .hide {
+            display: none !important;
+        }
     </style>
 @endsection
 
@@ -68,7 +72,14 @@
                                 {!! Form::select('type', ['' => '--- Chọn Loại ---'] + config('system.insight.values'), null, ['class' => 'form-control']) !!}
                             </div>
 
-                            <button type="submit" class="btn btn-success waves-effect waves-light m-l-15">Tìm kiếm</button>
+                            <button type="submit" value="search" name="search" class="btn btn-success waves-effect waves-light m-l-15">Tìm kiếm</button>
+
+                            <div class="form-group pull-right">
+                                <button class="btn btn-danger waves-effect waves-light m-t-15" value="export" type="submit" name="export">
+                                    <i class="fa fa-download"></i>&nbsp; Xuất Excel
+                                </button>
+                            </div>
+
                         </form>
                     </div>
                 </div>
@@ -92,8 +103,22 @@
                         <th width="10%">Result</th>
                         <th width="10%">CostPerResult</th>
                         <th width="10%">Spend</th>
+                        <th style="display: none"></th>
                     </tr>
                     </thead>
+                    <tfoot align="right">
+                    <tr>
+                        <th></th>
+                        <th></th>
+                        <th></th>
+                        <th></th>
+                        <th></th>
+                        <th></th>
+                        <th></th>
+                        <th></th>
+                    </tr>
+                    </tfoot>
+
                 </table>
             </div>
         </div>
@@ -119,6 +144,7 @@
     <script src="/vendor/ubold/assets/plugins/datatables/dataTables.scroller.min.js"></script>
     <script src="/vendor/ubold/assets/plugins/datatables/dataTables.colVis.js"></script>
     <script src="/vendor/ubold/assets/plugins/datatables/dataTables.fixedColumns.min.js"></script>
+    <script type="text/javascript" src="/js/jquery.number.min.js"></script>
 
     <script src="/vendor/ubold/assets/pages/datatables.init.js"></script>
     <script src="/vendor/ubold/assets/plugins/select2/js/select2.full.min.js"></script>
@@ -130,9 +156,40 @@
 
 @section('inline_scripts')
     <script type="text/javascript">
+        function updateDataTableSelectAllCtrl(table){
+            var $table             = table.table().node();
+            var $chkbox_all        = $('tbody input[type="checkbox"]', $table);
+            var $chkbox_checked    = $('tbody input[type="checkbox"]:checked', $table);
+            var chkbox_select_all  = $('thead input[name="select_all"]', $table).get(0);
+
+            // If none of the checkboxes are checked
+            if($chkbox_checked.length === 0){
+                chkbox_select_all.checked = false;
+                if('indeterminate' in chkbox_select_all){
+                    chkbox_select_all.indeterminate = false;
+                }
+
+                // If all of the checkboxes are checked
+            } else if ($chkbox_checked.length === $chkbox_all.length){
+                chkbox_select_all.checked = true;
+                if('indeterminate' in chkbox_select_all){
+                    chkbox_select_all.indeterminate = false;
+                }
+
+                // If some of the checkboxes are checked
+            } else {
+                chkbox_select_all.checked = true;
+                if('indeterminate' in chkbox_select_all){
+                    chkbox_select_all.indeterminate = true;
+                }
+            }
+        }
+
         $('.select2').select2();
         $.fn.dataTable.ext.errMode = 'none';
         $(function () {
+            var rows_selected = [];
+
             var datatable = $("#dataTables-reports").DataTable({
                 searching: false,
                 serverSide: true,
@@ -155,11 +212,54 @@
                     {data: 'result', name: 'result'},
                     {data: 'cost_per_result', name: 'impressions'},
                     {data: 'spend', name: 'spend'},
+                    {data: 'checkbox', name: 'checkbox', class: "hide"}
                 ],
-                order: [[1, 'desc']]
+                order: [[1, 'desc']],
+                "footerCallback": function ( row, data, start, end, display ) {
+                    var api = this.api(), data;
+
+                    // converting to interger to find total
+                    var intVal = function ( i ) {
+                        return typeof i === 'string' ?
+                            i.replace(/[\$,]/g, '')*1 :
+                            typeof i === 'number' ?
+                                i : 0;
+                    };
+
+                    // computing column Total of the complete result
+                    var resultTotal = api
+                        .column( 5 )
+                        .data()
+                        .reduce( function (a, b) {
+                            return intVal(a) + intVal(b);
+                        }, 0 );
+
+                    var cprTotal = api
+                        .column( 6 )
+                        .data()
+                        .reduce( function (a, b) {
+                            return intVal(a) + intVal(b);
+                        }, 0 );
+
+                    var spendTotal = api
+                        .column( 7 )
+                        .data()
+                        .reduce( function (a, b) {
+                            return intVal(a) + intVal(b);
+                        }, 0 );
+
+                    // Update footer by showing the total with the reference of the column index
+                    $( api.column( 0 ).footer() ).html('Total');
+                    $( api.column( 5 ).footer() ).html($.number(resultTotal));
+                    $( api.column( 6 ).footer() ).html($.number(cprTotal));
+                    $( api.column( 7 ).footer() ).html($.number(spendTotal));
+                }
             });
 
             $('#search-form').on('submit', function(e) {
+                var val = $("button[type=submit][clicked=true]").val();
+                console.log(val);
+
                 datatable.draw();
                 e.preventDefault();
             });
@@ -215,3 +315,4 @@
 
     </script>
 @endsection
+
