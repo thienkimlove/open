@@ -23,6 +23,7 @@
     <link href="/vendor/ubold/assets/css/menu.css" rel="stylesheet" type="text/css"/>
     <link href="/vendor/ubold/assets/css/responsive.css" rel="stylesheet" type="text/css"/>
     <link href="/css/admin/sweetalert2.min.css" rel="stylesheet" type="text/css"/>
+    <link rel="stylesheet" href="/bootstrap-social-icons/bootstrap-social-icons/assets/css/style.css">
     <link href="{{ url('backend/js/vis-4.20.1/dist/vis.css') }}" rel="stylesheet" type="text/css" />
 
     @yield('inline_styles', '')
@@ -47,7 +48,6 @@
 
 <div class="wrapper">
     <div class="container">
-
     @yield('content')
     <!-- Footer -->
     @include('common.footer')

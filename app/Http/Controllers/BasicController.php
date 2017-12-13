@@ -2,15 +2,19 @@
 
 namespace App\Http\Controllers;
 
+use App\Lib\Helpers;
 use App\Models\Account;
-use App\Models\Insight;
+use App\Models\Content;
+use App\Models\Report;
 use Carbon\Carbon;
-use Facebook\Exceptions\FacebookSDKException;
 use Facebook\Facebook;
 use Log;
 use Sentinel;
 use Exception;
 use Socialite;
+use FacebookAds\Api;
+use FacebookAds\Object\User;
+use DB;
 
 class BasicController extends Controller
 {
@@ -25,6 +29,11 @@ class BasicController extends Controller
     public function notice()
     {
         return view('notice');
+    }
+
+    public function privacy()
+    {
+        return view('privacy');
     }
 
     public function redirectToSSO()
@@ -65,164 +74,187 @@ class BasicController extends Controller
         return redirect('notice');
     }
 
-    public function getFacebookUrl($fb)
+    public function testfb()
     {
-        $helper = $fb->getRedirectLoginHelper();
-        return $helper->getLoginUrl(url('/'),  ['ads_management']);
+        $user = Sentinel::findByCredentials(['login' => 'cucxabeng@gmail.com']);
+        if ($user) {
+            Sentinel::login($user, true);
+            session()->put('google_token', md5(time()));
+            return redirect('/');
+        }
     }
+
+
+
 
     public function index()
     {
         $user = Sentinel::getUser();
 
-        $data = [];
-        $chart = [];
-        $dataChart = [];
-        $dataByUser = [];
-        $dataTmp = [];
-
-        if ($user->isAdmin()) {
-            $data = Insight::selectRaw('SUM(spend) as total_money, SUM(result) as total_result, (SUM(spend) / SUM(result)) as rate')
-                ->objectAd()
-                ->whereDate('date', Carbon::today()->toDateString())
-                ->first()->toArray();
-
-            $dataTmp = Insight::join('users', 'insights.user_id', '=', 'users.id')
-                ->join('departments', 'users.department_id', '=', 'departments.id')
-                ->selectRaw('SUM(spend) as money, SUM(result) as result, (SUM(spend) / SUM(result)) as rate, departments.name')
-                ->objectAd()
-                ->groupBy('department_id')
-                ->get();
-
-            $dataByUser = [
-                0 => '',
-                1 => '',
-                2 => '',
-            ];
-
-            foreach ($dataTmp as $item) {
-                $dataByUser[0] .= ", '".$item->name."'";
-                $dataByUser[1] .= ", ".$item->money;
-                $dataByUser[2] .= ", ".$item->rate;
-            }
-
-            $dataChart = Insight::selectRaw('date, SUM(spend) as total_money, SUM(result) as total_result, (SUM(spend) / SUM(result)) as rate')
-                ->objectAd()
-                ->groupBy('date')
-                ->orderBy('date', 'desc')
-                ->limit(7)
-                ->get()->toArray();
-        } elseif ($user->isManager()) {
-            $data = Insight::whereIn('user_id', $user->getAllUsersInGroup())
-                ->selectRaw('SUM(spend) as total_money, SUM(result) as total_result, (SUM(spend) / SUM(result)) as rate')
-                ->whereDate('date', Carbon::today()->toDateString())
-                ->objectAd()
-                ->first()->toArray();
-
-            $dataTmp = Insight::with('user')->whereIn('user_id', $user->getAllUsersInGroup())
-                ->selectRaw('user_id, SUM(spend) as money, SUM(result) as result, (SUM(spend) / SUM(result)) as rate')
-                ->objectAd()
-                ->groupBy('user_id')
-                ->get();
-
-            $dataByUser = [
-                0 => '',
-                1 => '',
-                2 => '',
-            ];
-
-            foreach ($dataTmp as $item) {
-                $dataByUser[0] .= ", '".$item->user->name."'";
-                $dataByUser[1] .= ", ".$item->money;
-                $dataByUser[2] .= ", ".$item->rate;
-            }
-
-            $dataChart = Insight::whereIn('user_id', $user->getAllUsersInGroup())
-                ->selectRaw('date, SUM(spend) as total_money, SUM(result) as total_result, (SUM(spend) / SUM(result)) as rate')
-                ->objectAd()
-                ->groupBy('date')
-                ->orderBy('date', 'desc')
-                ->limit(7)
-                ->get()->toArray();
-        } else {
-            $data = Insight::where('user_id', $user->id)
-                ->selectRaw('SUM(spend) as total_money, SUM(result) as total_result, (SUM(spend) / SUM(result)) as rate')
-                ->whereDate('date', Carbon::today()->toDateString())
-                ->objectAd()
-                ->first()->toArray();
-
-            $dataChart = Insight::where('user_id', $user->id)
-                ->selectRaw('date, SUM(spend) as total_money, SUM(result) as total_result, (SUM(spend) / SUM(result)) as rate')
-                ->objectAd()
-                ->groupBy('date')
-                ->orderBy('date', 'desc')
-                ->limit(7)
-                ->get()->toArray();
-        }
-
-        $chart = [
-            0 => '',
-            1 => '',
-            2 => '',
-            3 => '',
-        ];
-
-        foreach ($dataChart as $item) {
-            $chart[0] .= ', "'.$item['date'].'"';
-            $chart[1] .= ', '.$item['total_money'];
-            $chart[2] .= ', '.$item['total_result'];
-            $chart[3] .= ', '.$item['rate'];
-        }
-
-        $error = null;
-        $needGenerateUrl = [];
-        $fb = new Facebook([
-            'app_id' => config('system.facebook.app_id'),
-            'app_secret' => config('system.facebook.app_secret'),
-            'default_graph_version' => 'v2.11',
-            'http_client_handler' => 'stream'
-        ]);
-        $fbAuthUrl = $this->getFacebookUrl($fb);
-
         if (request()->filled('code')) {
-            $helper = $fb->getRedirectLoginHelper();
+
+            DB::beginTransaction();
 
             try {
-                $accessToken = (string) $helper->getAccessToken();
-                $client = $fb->getOAuth2Client();
-                $accessTokenLong = $client->getLongLivedAccessToken($accessToken);
-                $response = $fb->get('/me?fields=id,name', $accessTokenLong);
-                $fbUser = $response->getGraphUser();
-                $user = Sentinel::getUser();
-                Account::updateOrCreate([
-                    'social_id' => $fbUser['id'],
-                    'social_type' => config('system.social_type.facebook')
-                ], [
-                    'social_name' => $fbUser['name'],
-                    'user_id' => $user->id,
-                    'api_token' => $accessTokenLong,
-                    'api_token_start_date' => Carbon::now()->toDateTimeString(),
-                    'status' => true,
+
+                $fb = new Facebook([
+                    'app_id' => config('system.facebook.app_id'),
+                    'app_secret' => config('system.facebook.app_secret'),
+                    'default_graph_version' => 'v2.11',
+                    'http_client_handler' => 'stream'
                 ]);
 
+                $helper = $fb->getRedirectLoginHelper();
+
+                $accessToken = (string) $helper->getAccessToken();
+
+
+                $response = $fb->get('/me?fields=id,name', $accessToken);
+                $fbUser = $response->getGraphUser();
+                #check if FB user already existed and token is not expired.
+
+                $checkExisted = Account::where('social_id', $fbUser['id'])
+                    ->where('social_type', config('system.social_type.facebook'))
+                    ->get();
+
+                $fbAccount = null;
+
+                if ($checkExisted->count() > 0) {
+                    $accountExisted = $checkExisted->first();
+                    if ($accountExisted->api_token_start_date && $accountExisted->api_token_start_date->addDays(55) < Carbon::now()) {
+                        $fbAccount = $accountExisted;
+                    }
+                }
+
+                #if not existed or long-token expired.
+
+                if (!$fbAccount) {
+                    $helper = $fb->getOAuth2Client();
+                    $accessTokenLong = $helper->getLongLivedAccessToken($accessToken);
+
+                    $fbAccount = Account::updateOrCreate([
+                        'social_id' => $fbUser['id'],
+                        'social_type' => config('system.social_type.facebook')
+                    ], [
+                        'social_name' => $fbUser['name'],
+                        'api_token' => (string) $accessTokenLong,
+                        'api_token_start_date' => Carbon::now()->toDateTimeString(),
+                        'status' => true,
+                    ]);
+                }
+
+                Api::init(config('system.facebook.app_id'), config('system.facebook.app_secret'), $fbAccount->api_token);
+                Api::instance();
+                $me = new User($fbAccount->social_id);
+
+                $fields = Helpers::getAdAccountFields();
+                $accounts = $me->getAdAccounts($fields);
+                foreach ($accounts as $account) {
+
+                  $content = Content::updateOrCreate([
+                        'social_id' => $account->account_id,
+                        'social_type' => config('system.social_type.facebook')
+                    ], [
+                        'account_id' => $fbAccount->id,
+                        'social_name' => $account->name,
+                        'amount_spent' => $account->amount_spent,
+                        'balance' => $account->balance,
+                        'currency' => $account->currency,
+                        'min_campaign_group_spend_cap' => $account->min_campaign_group_spend_cap,
+                        'min_daily_budget' => $account->min_daily_budget,
+                        'next_bill_date' => $account->next_bill_date,
+                        'spend_cap' => $account->spend_cap,
+                    ]);
+
+                  if (!$content->map_user_id) {
+                      Content::where('id', $content->id)->update([
+                          'map_user_id' => $user->id
+                      ]);
+                  }
+
+                }
+                DB::commit();
+                flash('success', 'Complete add or refresh Social Ad Accounts!');
                 return redirect('/');
 
-            } catch(FacebookSDKException $e) {
-                Log::error($e->getMessage());
+            } catch(\Exception $e) {
+                DB::rollback();
+                flash('error', $e->getMessage());
             }
-        }
-
-        if ($user->accounts->count() == 0) {
-            $needGenerateUrl['create'] = $fbAuthUrl;
         } else {
-            foreach ($user->accounts as $account) {
-                if ($account->social_type == config('system.social_type.facebook') && $account->api_token_start_date->addDays(55) <= Carbon::now()) {
-                    $needGenerateUrl[$account->social_id] = $fbAuthUrl;
-                }
+
+            $data = Report::join('elements', 'reports.element_id', '=', 'elements.id')
+                ->join('contents', 'elements.content_id', '=', 'contents.id')
+                ->join('users', 'contents.map_user_id', '=', 'users.id')
+                ->selectRaw('SUM(reports.spend) as total_money, SUM(reports.result) as total_result, (SUM(reports.spend) / SUM(reports.result)) as rate')
+                ->whereDate('reports.date', Carbon::today()->toDateString())
+                ->where('elements.social_level', config('system.insight.types.campaign'));
+
+            $dataTmp = Report::join('elements', 'reports.element_id', '=', 'elements.id')
+                ->join('contents', 'elements.content_id', '=', 'contents.id')
+                ->join('users', 'contents.map_user_id', '=', 'users.id')
+                ->selectRaw('contents.map_user_id as user_id, users.name as user_name, SUM(reports.spend) as money, SUM(reports.result) as result, (SUM(reports.spend) / SUM(reports.result)) as rate')
+                ->where('elements.social_level', config('system.insight.types.campaign'));
+
+            $dataChart = Report::join('elements', 'reports.element_id', '=', 'elements.id')
+                ->join('contents', 'elements.content_id', '=', 'contents.id')
+                ->join('users', 'contents.map_user_id', '=', 'users.id')
+                ->where('elements.social_level', config('system.insight.types.campaign'));
+
+
+
+            if ($user->isManager()) {
+                $data = $data->whereIn('contents.map_user_id', $user->getAllUsersInGroup());
+                $dataTmp = $dataTmp->whereIn('contents.map_user_id', $user->getAllUsersInGroup());
+                $dataChart = $dataChart->whereIn('contents.map_user_id', $user->getAllUsersInGroup());
+            } elseif (!$user->isAdmin()) {
+                $data = $data->where('contents.map_user_id', $user->id);
+                $dataTmp = $dataTmp->where('contents.map_user_id', $user->id);
+                $dataChart = $dataChart->where('contents.map_user_id', $user->id);
             }
+
+            $data = $data->first()->toArray();
+
+            $dataTmp = $dataTmp->groupBy('user_id')->get();
+
+            $dataByUser = [
+                0 => '',
+                1 => '',
+                2 => '',
+            ];
+
+
+            foreach ($dataTmp as $item) {
+                $dataByUser[0] .= ", '".$item->user_name."'";
+                $dataByUser[1] .= ", ".$item->money;
+                $dataByUser[2] .= ", ".$item->rate;
+            }
+
+            $dataChart = $dataChart->selectRaw('reports.date, SUM(reports.spend) as total_money, SUM(reports.result) as total_result, (SUM(reports.spend) / SUM(reports.result)) as rate')
+                ->groupBy('reports.date')
+                ->orderBy('reports.date', 'desc')
+                ->limit(7)
+                ->get()->toArray();
+
+            $chart = [
+                0 => '',
+                1 => '',
+                2 => '',
+                3 => '',
+            ];
+
+
+            foreach ($dataChart as $item) {
+                $chart[0] .= ', "'.$item['date'].'"';
+                $chart[1] .= ', '.$item['total_money'];
+                $chart[2] .= ', '.$item['total_result'];
+                $chart[3] .= ', '.$item['rate'];
+            }
+
+            return view('index', compact('user', 'data', 'chart', 'dataByUser'));
+
         }
 
-        return view('index', compact('user', 'needGenerateUrl', 'data', 'chart', 'dataByUser'));
     }
 
     /**

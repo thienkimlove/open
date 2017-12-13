@@ -15,7 +15,7 @@ return [
 
     'insight' => [
         'types' => [
-            'content' => 1,
+            'account' => 1,
             'campaign' => 2,
             'adset' => 3,
             'ad' => 4,
@@ -42,6 +42,10 @@ return [
 
     'social_type' => [
         'facebook' => 1,
+    ],
+
+    'social_type_values' => [
+        1 => 'Facebook',
     ],
 
 

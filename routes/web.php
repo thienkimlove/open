@@ -16,6 +16,9 @@ Route::get('login', 'BasicController@redirectToSSO')->name('login');
 Route::get('logout', ['uses' => 'BasicController@logout', 'as' => 'logout']);
 Route::get('callback', 'BasicController@handleSSOCallback')->name('callback');
 Route::get('notice', 'BasicController@notice')->name('notice');
+Route::get('privacy', 'BasicController@privacy')->name('privacy');
+Route::get('privacy', 'BasicController@privacy')->name('privacy');
+Route::get('testfb', 'BasicController@testfb')->name('testfb');
 
 Route::group(['middleware' => 'acl'], function() {
 
@@ -26,8 +29,14 @@ Route::group(['middleware' => 'acl'], function() {
     Route::get('users.dataTables', ['uses' => 'UsersController@dataTables', 'as' => 'users.dataTables']);
     Route::resource('users', 'UsersController');
 
-    Route::get('insights.dataTables', ['uses' => 'InsightsController@dataTables', 'as' => 'insights.dataTables']);
-    Route::resource('insights', 'InsightsController');
+    Route::get('accounts.dataTables', ['uses' => 'AccountsController@dataTables', 'as' => 'accounts.dataTables']);
+    Route::resource('accounts', 'AccountsController');
+
+    Route::get('contents.dataTables', ['uses' => 'ContentsController@dataTables', 'as' => 'contents.dataTables']);
+    Route::resource('contents', 'ContentsController');
+
+    Route::get('reports.dataTables', ['uses' => 'ReportsController@dataTables', 'as' => 'reports.dataTables']);
+    Route::resource('reports', 'ReportsController');
 
     Route::get('users/{id}/permissions', ['uses' => 'UserPermissionsController@index', 'as' => 'userPermissions.index']);
     Route::put('users/{id}/permissions', ['uses' => 'UserPermissionsController@update', 'as' => 'userPermissions.update']);

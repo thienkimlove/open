@@ -2,8 +2,6 @@
 
 namespace App\Console;
 
-use App\Console\Commands\CalculateResults;
-use App\Console\Commands\GetAccount;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Foundation\Console\Kernel as ConsoleKernel;
 
@@ -15,8 +13,7 @@ class Kernel extends ConsoleKernel
      * @var array
      */
     protected $commands = [
-        GetAccount::class,
-        CalculateResults::class,
+
     ];
 
     /**
@@ -29,8 +26,11 @@ class Kernel extends ConsoleKernel
     {
         // $schedule->command('inspire')
         //          ->hourly();
-        $schedule->command('get:account')
-            ->dailyAt('08:00');
+        $schedule->command('get:element')
+        ->dailyAt('08:00');
+
+        $schedule->command('date:insight')
+            ->hourly();
     }
 
     /**

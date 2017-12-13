@@ -2,12 +2,13 @@
 
 namespace App\Models;
 
+use Sentinel;
+use DataTables;
 use Illuminate\Database\Eloquent\Model;
 
 class Content extends Model
 {
     protected $fillable = [
-        'user_id',
         'account_id',
         'social_id',
         'social_name',
@@ -22,7 +23,8 @@ class Content extends Model
         'min_daily_budget',
         'next_bill_date',
         'spend_cap',
-        'last_report_run'
+        'last_report_run',
+        'map_user_id'
     ];
 
 
@@ -31,29 +33,41 @@ class Content extends Model
         return $this->belongsTo(Account::class);
     }
 
-    public function user()
+
+    public function mapUser()
     {
-        return $this->belongsTo(User::class);
+        return $this->belongsTo(User::class, 'map_user_id', 'id');
     }
 
-    public function campaigns()
+
+    public static function getDataTables($request)
     {
-        return $this->hasMany(Campaign::class);
+        $content = static::select('*')->with('mapUser');
+
+
+        return DataTables::of($content)
+            ->filter(function ($query) use ($request) {
+                if ($request->filled('social_name')) {
+                    $query->where('social_name', 'like', '%' . $request->get('social_name') . '%');
+                }
+
+
+                if ($request->filled('social_type')) {
+                    $query->where('social_type', $request->get('social_type'));
+                }
+
+                if ($request->filled('status')) {
+                    $query->where('status', $request->get('status'));
+                }
+            })->editColumn('status', function ($account) {
+                return $account->status ? '<i class="ion ion-checkmark-circled text-success"></i>' : '<i class="ion ion-close-circled text-danger"></i>';
+            })->editColumn('social_type', function ($account) {
+                return config('system.social_type_values.'.$account->social_type);
+            })->editColumn('map_user_id', function ($account) {
+                return isset($account->mapUser) ? $account->mapUser->name : 'Not Assign Yet';
+            })->rawColumns(['status'])
+            ->make(true);
     }
 
-    public function sets()
-    {
-        return $this->hasMany(Set::class);
-    }
-
-    public function ads()
-    {
-        return $this->hasMany(Ad::class);
-    }
-
-    public function getTotalInsight()
-    {
-        return Insight::where('content_id', $this->id)->where('social_type', config('system.social_type.facebook'))->where('object_type', config('system.insight.types.content'))->count();
-    }
 
 }

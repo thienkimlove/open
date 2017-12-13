@@ -11,11 +11,12 @@
                 </li>
 
                 <li class="has-submenu">
-                    <a href="{{ route('insights.index')}}"><i class="md md-view-list"></i>Thống kê</a>
+                    <a href="{{ route('reports.index')}}"><i class="md md-view-list"></i>Thống kê</a>
                 </li>
 
 
             @if ($currentUser->isSuperAdmin())
+
                 <li class="has-submenu">
                     <a href="#"><i class="md md-class"></i>Hệ thống</a>
                     <ul class="submenu">
@@ -23,6 +24,9 @@
                         <li><a href="{{ url('/roles') }}">Role</a></li>
                         <li><a href="{{ url('/permissions') }}">Permission</a></li>
                         <li><a href="{{ route('departments.index') }}">Phòng ban</a></li>
+
+                        <li><a href="{{ route('accounts.index') }}">Social Accounts</a></li>
+                        <li><a href="{{ route('contents.index') }}">Ad Accounts</a></li>
                     </ul>
                 </li>
                 @endif
