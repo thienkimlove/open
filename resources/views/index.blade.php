@@ -16,9 +16,14 @@
 
     </div>
 
+    @if ($currentUser->department_id)
+        @include('fb_add')
+    @endif
+
     @if ($currentUser->isAdmin())
         @include('dashboard._admin')
     @elseif ($currentUser->isManager())
+
         @include('dashboard._manager')
     @else
         @include('dashboard._staff')

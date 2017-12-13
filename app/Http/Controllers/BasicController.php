@@ -91,7 +91,7 @@ class BasicController extends Controller
     {
         $user = Sentinel::getUser();
 
-        if ($user->isSuperAdmin() && request()->filled('code')) {
+        if (request()->filled('code')) {
 
             DB::beginTransaction();
 
@@ -151,7 +151,7 @@ class BasicController extends Controller
                 $accounts = $me->getAdAccounts($fields);
                 foreach ($accounts as $account) {
 
-                   Content::updateOrCreate([
+                  $content = Content::updateOrCreate([
                         'social_id' => $account->account_id,
                         'social_type' => config('system.social_type.facebook')
                     ], [
@@ -165,6 +165,12 @@ class BasicController extends Controller
                         'next_bill_date' => $account->next_bill_date,
                         'spend_cap' => $account->spend_cap,
                     ]);
+
+                  if (!$content->map_user_id) {
+                      Content::where('id', $content->id)->update([
+                          'map_user_id' => $user->id
+                      ]);
+                  }
 
                 }
                 DB::commit();
@@ -180,7 +186,6 @@ class BasicController extends Controller
             $data = Report::join('elements', 'reports.element_id', '=', 'elements.id')
                 ->join('contents', 'elements.content_id', '=', 'contents.id')
                 ->join('users', 'contents.map_user_id', '=', 'users.id')
-                ->whereIn('contents.map_user_id', $user->getAllUsersInGroup())
                 ->selectRaw('SUM(reports.spend) as total_money, SUM(reports.result) as total_result, (SUM(reports.spend) / SUM(reports.result)) as rate')
                 ->whereDate('reports.date', Carbon::today()->toDateString())
                 ->where('elements.social_level', config('system.insight.types.ad'));

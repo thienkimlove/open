@@ -233,15 +233,16 @@ class DateInsight extends Command
 
         $activeElements = Element::where('social_status', true)
             ->where('social_type', config('system.social_type.facebook'))
-            ->where(function($q){
+           /* ->where(function($q){
                 $q->whereRaw('DATE(last_insight_updated) < CURDATE()');
                 $q->orWhereNull('last_insight_updated');
-            })
+            })*/
             ->get();
 
 
         # for elements for one account we choose 50
         if ($activeElements->count() > 0) {
+            //dd($activeElements->count());
             foreach ($activeElements->groupBy('content_id') as $groupElements) {
                foreach ($groupElements->chunk(50) as $elements) {
                    $this->batchInsight($elements);
