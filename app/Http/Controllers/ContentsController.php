@@ -27,4 +27,19 @@ class ContentsController extends Controller
         return Content::getDataTables($request);
     }
 
+    public function updateMapUser(Request $request)
+    {
+        $this->validate($request, [
+            'status' => 'required',
+        ]);
+
+        Content::whereIn('id', $request->get('status', []))
+            ->update([
+                'map_user_id' => null,
+            ]);
+
+        flash()->success('Thành công', 'Đã cập nhật');
+
+        return redirect('/');
+    }
 }
