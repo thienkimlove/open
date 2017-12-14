@@ -70,6 +70,10 @@ class Report extends Model
             })->addColumn('social_type', function ($report) {
                 return config('system.social_type_values.'.$report->element->social_type);
             })
+            ->addColumn('checkbox', function ($report) {
+                return '<input type="checkbox" data-id="' . $report->id . '">';
+            })
+            ->rawColumns(['checkbox'])
             ->make(true);
     }
 }

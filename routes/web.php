@@ -33,6 +33,7 @@ Route::group(['middleware' => 'acl'], function() {
     Route::resource('accounts', 'AccountsController');
 
     Route::get('contents.dataTables', ['uses' => 'ContentsController@dataTables', 'as' => 'contents.dataTables']);
+    Route::post('contents/update-map-user', 'ContentsController@updateMapUser')->name('contents.updateMapUser');
     Route::resource('contents', 'ContentsController');
 
     Route::get('reports.dataTables', ['uses' => 'ReportsController@dataTables', 'as' => 'reports.dataTables']);

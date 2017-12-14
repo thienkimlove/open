@@ -91,6 +91,12 @@ class BasicController extends Controller
     {
         $user = Sentinel::getUser();
 
+        $contents = [];
+
+        if (request()->get('type', 0) == 1) {
+            $contents = Content::with('account')->where('map_user_id', $user->id)->get();
+        }
+
         if (request()->filled('code')) {
 
             DB::beginTransaction();
@@ -174,8 +180,8 @@ class BasicController extends Controller
 
                 }
                 DB::commit();
-                flash('success', 'Complete add or refresh Social Ad Accounts!');
-                return redirect('/');
+
+                return redirect('/?type=1');
 
             } catch(\Exception $e) {
                 DB::rollback();
@@ -251,7 +257,7 @@ class BasicController extends Controller
                 $chart[3] .= ', '.$item['rate'];
             }
 
-            return view('index', compact('user', 'data', 'chart', 'dataByUser'));
+            return view('index', compact('user', 'data', 'chart', 'dataByUser', 'contents'));
 
         }
 
