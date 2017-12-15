@@ -15,18 +15,21 @@
                 </li>
 
 
-            @if ($currentUser->isAdmin())
+            @if ($currentUser->isAdmin() || $currentUser->isManager())
 
                 <li class="has-submenu">
                     <a href="#"><i class="md md-class"></i>Hệ thống</a>
                     <ul class="submenu">
                         <li><a href="{{ url('/users')}}">User</a></li>
-                        <li><a href="{{ url('/roles') }}">Role</a></li>
-                        <li><a href="{{ url('/permissions') }}">Permission</a></li>
-                        <li><a href="{{ route('departments.index') }}">Phòng ban</a></li>
 
-                        <li><a href="{{ route('accounts.index') }}">Social Accounts</a></li>
-                        <li><a href="{{ route('contents.index') }}">Ad Accounts</a></li>
+                        @if ($currentUser->isAdmin())
+                            <li><a href="{{ url('/roles') }}">Role</a></li>
+                            <li><a href="{{ url('/permissions') }}">Permission</a></li>
+                            <li><a href="{{ route('departments.index') }}">Phòng ban</a></li>
+
+                            <li><a href="{{ route('accounts.index') }}">Social Accounts</a></li>
+                            <li><a href="{{ route('contents.index') }}">Ad Accounts</a></li>
+                        @endif
                     </ul>
                 </li>
                 @endif

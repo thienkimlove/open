@@ -41,6 +41,12 @@ class Helpers {
 
     public static function roleList()
     {
+        $currentUser = Sentinel::getUser();
+
+        if ($currentUser->isManager()) {
+            return Role::where('slug', 'nhan-vien')->pluck('name', 'id')->all();
+        }
+
        return Role::pluck('name', 'id')->all();
     }
 
@@ -51,6 +57,12 @@ class Helpers {
 
     public static function departmentList()
     {
+        $currentUser = Sentinel::getUser();
+
+        if ($currentUser->isManager()) {
+            return Department::where('status', 1)->where('id', $currentUser->department_id)->pluck('name', 'id')->toArray();
+        }
+
         return Department::where('status', 1)->pluck('name', 'id')->toArray();
     }
 
