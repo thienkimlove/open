@@ -123,7 +123,7 @@ class User extends EloquentUser implements
                 if ($currentUser->id != $user->id) {
                     return '<a class="table-action-btn" title="Chỉnh sửa người dùng" href="' . route('users.edit', $user->id) . '"><i class="fa fa-pencil text-success"></i></a>';
                 } else {
-                    return '';
+                    return 'This is you!';
                 }
 
             })
