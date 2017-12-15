@@ -119,8 +119,13 @@ class User extends EloquentUser implements
             ->addColumn('department_name', function ($user) {
                 return $user->department ? $user->department->name : '';
             })
-            ->addColumn('action', function ($user) {
-                return '<a class="table-action-btn" title="Chỉnh sửa người dùng" href="' . route('users.edit', $user->id) . '"><i class="fa fa-pencil text-success"></i></a>';
+            ->addColumn('action', function ($user) use ($currentUser) {
+                if ($currentUser->id != $user->id) {
+                    return '<a class="table-action-btn" title="Chỉnh sửa người dùng" href="' . route('users.edit', $user->id) . '"><i class="fa fa-pencil text-success"></i></a>';
+                } else {
+                    return '';
+                }
+
             })
             ->rawColumns(['roles', 'contents', 'status', 'action', 'email', 'name'])
             ->make(true);
