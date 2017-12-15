@@ -139,7 +139,7 @@
                     {data: 'social_id', name: 'social_id'},
                     {data: 'social_name', name: 'social_name'},
                     {data: 'social_type', name: 'social_type'},
-                    {data: 'map_user_id', name: 'map_user_id'},
+                    {data: 'user_id', name: 'user_id'},
                     {data: 'status', name: 'status'},
                     {data: 'created_at', name: 'created_at'}
                 ],

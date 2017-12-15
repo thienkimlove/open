@@ -91,7 +91,7 @@ class UserRequest extends FormRequest
         $user = User::create(array_merge($this->all(), ['password' => md5(time())]));
 
         if ($this->filled('contents')) {
-            Content::whereNull('map_user_id')->whereIn('id', $this->get('contents'))->update(['map_user_id' => $user->id]);
+            Content::whereNull('user_id')->whereIn('id', $this->get('contents'))->update(['user_id' => $user->id]);
         }
 
         return $this;
@@ -119,10 +119,10 @@ class UserRequest extends FormRequest
 
 
         if ($this->filled('contents')) {
-            Content::where('map_user_id', $user->id)->update(['map_user_id' => null]);
-            Content::whereNull('map_user_id')->whereIn('id', $this->get('contents'))->update(['map_user_id' => $user->id]);
+            Content::where('user_id', $user->id)->update(['user_id' => null]);
+            Content::whereNull('user_id')->whereIn('id', $this->get('contents'))->update(['user_id' => $user->id]);
         } else {
-            Content::where('map_user_id', $user->id)->update(['map_user_id' => null]);
+            Content::where('user_id', $user->id)->update(['user_id' => null]);
         }
 
         return $this;

@@ -52,10 +52,9 @@ class User extends EloquentUser implements
         return $this->hasMany(Account::class);
     }
 
-    public function maps()
+    public function contents()
     {
-        return $this->hasMany(Content::class, 'map_user_id',
-            'id');
+        return $this->hasMany(Content::class);
     }
 
 
@@ -111,7 +110,7 @@ class User extends EloquentUser implements
             ->addColumn('contents', function ($user) {
                 $contents = '';
 
-                foreach ($user->maps as $content) {
+                foreach ($user->contents as $content) {
                     $contents .= '&nbsp;&nbsp;<span style="background-color: #e3e3e3">' . $content->social_name . '</span>';
                 }
 

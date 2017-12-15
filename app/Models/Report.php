@@ -33,7 +33,7 @@ class Report extends Model
                 if ($request->filled('user_id')) {
                     $query->whereHas('element', function ($q1) use ($request) {
                         $q1->whereHas('content', function ($q2) use ($request) {
-                            $q2->where('map_user_id', $request->get('user_id'));
+                            $q2->where('user_id', $request->get('user_id'));
                         });
                     });
 
@@ -42,7 +42,7 @@ class Report extends Model
                 if ($request->filled('department_id')) {
                     $query->whereHas('element', function ($q1) use ($request) {
                         $q1->whereHas('content', function ($q2) use ($request) {
-                            $q2->whereHas('mapUser', function ($q3) use ($request) {
+                            $q2->whereHas('user', function ($q3) use ($request) {
                                 $q3->where('department_id', $request->get('department_id'));
                             });
                         });
@@ -86,7 +86,7 @@ class Report extends Model
         if ($request->filled('filter_user_id')) {
             $query->whereHas('element', function ($q1) use ($request) {
                 $q1->whereHas('content', function ($q2) use ($request) {
-                    $q2->where('map_user_id', $request->get('filter_user_id'));
+                    $q2->where('user_id', $request->get('filter_user_id'));
                 });
             });
 
@@ -95,7 +95,7 @@ class Report extends Model
         if ($request->filled('filter_department_id')) {
             $query->whereHas('element', function ($q1) use ($request) {
                 $q1->whereHas('content', function ($q2) use ($request) {
-                    $q2->whereHas('mapUser', function ($q3) use ($request) {
+                    $q2->whereHas('user', function ($q3) use ($request) {
                         $q3->where('department_id', $request->get('filter_department_id'));
                     });
                 });

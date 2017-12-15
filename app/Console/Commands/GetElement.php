@@ -187,7 +187,7 @@ class GetElement extends Command
         #For facebook only
 
         $adAccounts = Content::where('status', true)
-            ->whereNotNull('map_user_id')
+            ->whereNotNull('user_id')
             ->where('social_type', config('system.social_type.facebook'))
             ->get();
 

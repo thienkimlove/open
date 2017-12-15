@@ -57,7 +57,7 @@ class Helpers {
 
     public static function contentListForCreate()
     {
-        return Content::whereNull('map_user_id')->pluck('social_name', 'id')->all();
+        return Content::whereNull('user_id')->pluck('social_name', 'id')->all();
     }
 
     public static function contentListForUpdate()

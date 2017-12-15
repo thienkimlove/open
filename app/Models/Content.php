@@ -14,6 +14,7 @@ class Content extends Model
         'social_name',
         'social_type',
         'status',
+        'user_id',
 
         //attributes for account_level
         'amount_spent',
@@ -24,7 +25,6 @@ class Content extends Model
         'next_bill_date',
         'spend_cap',
         'last_report_run',
-        'map_user_id'
     ];
 
 
@@ -34,15 +34,15 @@ class Content extends Model
     }
 
 
-    public function mapUser()
+    public function user()
     {
-        return $this->belongsTo(User::class, 'map_user_id', 'id');
+        return $this->belongsTo(User::class);
     }
 
 
     public static function getDataTables($request)
     {
-        $content = static::select('*')->with('mapUser');
+        $content = static::select('*')->with('user');
 
 
         return DataTables::of($content)
@@ -63,8 +63,8 @@ class Content extends Model
                 return $account->status ? '<i class="ion ion-checkmark-circled text-success"></i>' : '<i class="ion ion-close-circled text-danger"></i>';
             })->editColumn('social_type', function ($account) {
                 return config('system.social_type_values.'.$account->social_type);
-            })->editColumn('map_user_id', function ($account) {
-                return isset($account->mapUser) ? $account->mapUser->name : 'Not Assign Yet';
+            })->editColumn('user_id', function ($account) {
+                return isset($account->user) ? $account->user->name : 'Not Assign Yet';
             })->rawColumns(['status'])
             ->make(true);
     }

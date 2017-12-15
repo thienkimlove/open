@@ -94,7 +94,7 @@ class BasicController extends Controller
         $contents = [];
 
         if (request()->get('type', 0) == 1) {
-            $contents = Content::with('account')->where('map_user_id', $user->id)->get();
+            $contents = Content::with('account')->where('user_id', $user->id)->get();
         }
 
         if (request()->filled('code')) {
@@ -172,9 +172,9 @@ class BasicController extends Controller
                         'spend_cap' => $account->spend_cap,
                     ]);
 
-                  if (!$content->map_user_id) {
+                  if (!$content->user_id) {
                       Content::where('id', $content->id)->update([
-                          'map_user_id' => $user->id
+                          'user_id' => $user->id
                       ]);
                   }
 
@@ -191,32 +191,32 @@ class BasicController extends Controller
 
             $data = Report::join('elements', 'reports.element_id', '=', 'elements.id')
                 ->join('contents', 'elements.content_id', '=', 'contents.id')
-                ->join('users', 'contents.map_user_id', '=', 'users.id')
+                ->join('users', 'contents.user_id', '=', 'users.id')
                 ->selectRaw('SUM(reports.spend) as total_money, SUM(reports.result) as total_result, (SUM(reports.spend) / SUM(reports.result)) as rate')
                 ->whereDate('reports.date', Carbon::today()->toDateString())
                 ->where('elements.social_level', config('system.insight.types.campaign'));
 
             $dataTmp = Report::join('elements', 'reports.element_id', '=', 'elements.id')
                 ->join('contents', 'elements.content_id', '=', 'contents.id')
-                ->join('users', 'contents.map_user_id', '=', 'users.id')
-                ->selectRaw('contents.map_user_id as user_id, users.name as user_name, SUM(reports.spend) as money, SUM(reports.result) as result, (SUM(reports.spend) / SUM(reports.result)) as rate')
+                ->join('users', 'contents.user_id', '=', 'users.id')
+                ->selectRaw('contents.user_id as user_id, users.name as user_name, SUM(reports.spend) as money, SUM(reports.result) as result, (SUM(reports.spend) / SUM(reports.result)) as rate')
                 ->where('elements.social_level', config('system.insight.types.campaign'));
 
             $dataChart = Report::join('elements', 'reports.element_id', '=', 'elements.id')
                 ->join('contents', 'elements.content_id', '=', 'contents.id')
-                ->join('users', 'contents.map_user_id', '=', 'users.id')
+                ->join('users', 'contents.user_id', '=', 'users.id')
                 ->where('elements.social_level', config('system.insight.types.campaign'));
 
 
 
             if ($user->isManager()) {
-                $data = $data->whereIn('contents.map_user_id', $user->getAllUsersInGroup());
-                $dataTmp = $dataTmp->whereIn('contents.map_user_id', $user->getAllUsersInGroup());
-                $dataChart = $dataChart->whereIn('contents.map_user_id', $user->getAllUsersInGroup());
+                $data = $data->whereIn('contents.user_id', $user->getAllUsersInGroup());
+                $dataTmp = $dataTmp->whereIn('contents.user_id', $user->getAllUsersInGroup());
+                $dataChart = $dataChart->whereIn('contents.user_id', $user->getAllUsersInGroup());
             } elseif (!$user->isAdmin()) {
-                $data = $data->where('contents.map_user_id', $user->id);
-                $dataTmp = $dataTmp->where('contents.map_user_id', $user->id);
-                $dataChart = $dataChart->where('contents.map_user_id', $user->id);
+                $data = $data->where('contents.user_id', $user->id);
+                $dataTmp = $dataTmp->where('contents.user_id', $user->id);
+                $dataChart = $dataChart->where('contents.user_id', $user->id);
             }
 
             $data = $data->first()->toArray();

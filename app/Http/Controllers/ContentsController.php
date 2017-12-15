@@ -35,7 +35,7 @@ class ContentsController extends Controller
 
         Content::whereIn('id', $request->get('status', []))
             ->update([
-                'map_user_id' => null,
+                'user_id' => null,
             ]);
 
         flash()->success('Thành công', 'Đã cập nhật');
