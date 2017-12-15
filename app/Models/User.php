@@ -146,7 +146,7 @@ class User extends EloquentUser implements
 
     public function isSuperAdmin()
     {
-        return (bool)$this->is_superadmin;
+        return $this->isAdmin();
     }
 
     public static function create(array $attributes = [])
