@@ -95,6 +95,7 @@
                 <table id="dataTables-reports" class="table table-striped table-bordered table-actions-bar">
                     <thead>
                     <tr>
+                        <th></th>
                         <th width="10%">Date</th>
                         <th width="10%">SocialID</th>
                         <th width="30%">SocialName</th>
@@ -103,11 +104,11 @@
                         <th width="10%">Result</th>
                         <th width="10%">CostPerResult</th>
                         <th width="10%">Spend</th>
-                        <th style="display: none"></th>
                     </tr>
                     </thead>
                     <tfoot align="right">
                     <tr>
+                        <th></th>
                         <th></th>
                         <th></th>
                         <th></th>
@@ -194,6 +195,11 @@
                 searching: false,
                 serverSide: true,
                 processing: true,
+                paging: false,
+                scrollY: 300,
+                scroller: {
+                    loadingIndicator: true
+                },
                 ajax: {
                     url: '{!! route('reports.dataTables') !!}',
                     data: function (d) {
@@ -204,15 +210,15 @@
                     }
                 },
                 columns: [
-                    {data: 'date', name: 'date', orderable: false, searchable: false},
+                    {data: 'checkbox', name: 'checkbox', orderable: false, searchable: false},
+                    {data: 'date', name: 'date'},
                     {data: 'social_id', name: 'social_id'},
                     {data: 'social_name', name: 'social_name'},
                     {data: 'social_level', name: 'social_level'},
                     {data: 'social_type', name: 'social_type'},
                     {data: 'result', name: 'result'},
                     {data: 'cost_per_result', name: 'impressions'},
-                    {data: 'spend', name: 'spend'},
-                    {data: 'checkbox', name: 'checkbox', class: "hide"}
+                    {data: 'spend', name: 'spend'}
                 ],
                 order: [[1, 'desc']],
                 "footerCallback": function ( row, data, start, end, display ) {
@@ -228,21 +234,21 @@
 
                     // computing column Total of the complete result
                     var resultTotal = api
-                        .column( 5 )
-                        .data()
-                        .reduce( function (a, b) {
-                            return intVal(a) + intVal(b);
-                        }, 0 );
-
-                    var cprTotal = api
                         .column( 6 )
                         .data()
                         .reduce( function (a, b) {
                             return intVal(a) + intVal(b);
                         }, 0 );
 
-                    var spendTotal = api
+                    var cprTotal = api
                         .column( 7 )
+                        .data()
+                        .reduce( function (a, b) {
+                            return intVal(a) + intVal(b);
+                        }, 0 );
+
+                    var spendTotal = api
+                        .column( 8 )
                         .data()
                         .reduce( function (a, b) {
                             return intVal(a) + intVal(b);
@@ -250,9 +256,9 @@
 
                     // Update footer by showing the total with the reference of the column index
                     $( api.column( 0 ).footer() ).html('Total');
-                    $( api.column( 5 ).footer() ).html($.number(resultTotal));
-                    $( api.column( 6 ).footer() ).html($.number(cprTotal));
-                    $( api.column( 7 ).footer() ).html($.number(spendTotal));
+                    $( api.column( 6 ).footer() ).html($.number(resultTotal));
+                    $( api.column( 7 ).footer() ).html($.number(cprTotal));
+                    $( api.column( 8 ).footer() ).html($.number(spendTotal));
                 }
             });
 
