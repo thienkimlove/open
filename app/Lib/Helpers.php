@@ -74,7 +74,7 @@ class Helpers {
 
     public static function contentListForUpdate()
     {
-        return Content::pluck('social_name', 'id')->all();
+        return Content::pluck('social_name', 'id')->whereNull('user_id')->all();
     }
 
     public static function getListUserInGroup()
