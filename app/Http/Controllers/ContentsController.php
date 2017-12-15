@@ -33,9 +33,12 @@ class ContentsController extends Controller
             'status' => 'required',
         ]);
 
+
+        $user = Sentinel::getUser();
+
         Content::whereIn('id', $request->get('status', []))
             ->update([
-                'user_id' => null,
+                'user_id' => $user->id,
             ]);
 
         flash()->success('Thành công', 'Đã cập nhật');

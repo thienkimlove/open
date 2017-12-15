@@ -93,8 +93,8 @@ class BasicController extends Controller
 
         $contents = [];
 
-        if (request()->get('type', 0) == 1) {
-            $contents = Content::with('account')->where('user_id', $user->id)->get();
+        if (request()->filled('type')) {
+            $contents = Content::where('account_id', request()->get('type'))->get();
         }
 
         if (request()->filled('code')) {
@@ -157,7 +157,7 @@ class BasicController extends Controller
                 $accounts = $me->getAdAccounts($fields);
                 foreach ($accounts as $account) {
 
-                  $content = Content::updateOrCreate([
+                 Content::updateOrCreate([
                         'social_id' => $account->account_id,
                         'social_type' => config('system.social_type.facebook')
                     ], [
@@ -172,16 +172,11 @@ class BasicController extends Controller
                         'spend_cap' => $account->spend_cap,
                     ]);
 
-                  if (!$content->user_id) {
-                      Content::where('id', $content->id)->update([
-                          'user_id' => $user->id
-                      ]);
-                  }
 
                 }
                 DB::commit();
 
-                return redirect('/?type=1');
+                return redirect('/?type='.$fbAccount->id);
 
             } catch(\Exception $e) {
                 DB::rollback();
@@ -192,6 +187,7 @@ class BasicController extends Controller
             $data = Report::join('elements', 'reports.element_id', '=', 'elements.id')
                 ->join('contents', 'elements.content_id', '=', 'contents.id')
                 ->join('users', 'contents.user_id', '=', 'users.id')
+                ->join('departments', 'departments.id', '=', 'users.department_id')
                 ->selectRaw('SUM(reports.spend) as total_money, SUM(reports.result) as total_result, (SUM(reports.spend) / SUM(reports.result)) as rate')
                 ->whereDate('reports.date', Carbon::today()->toDateString())
                 ->where('elements.social_level', config('system.insight.types.campaign'));
@@ -199,12 +195,14 @@ class BasicController extends Controller
             $dataTmp = Report::join('elements', 'reports.element_id', '=', 'elements.id')
                 ->join('contents', 'elements.content_id', '=', 'contents.id')
                 ->join('users', 'contents.user_id', '=', 'users.id')
-                ->selectRaw('contents.user_id as user_id, users.name as user_name, SUM(reports.spend) as money, SUM(reports.result) as result, (SUM(reports.spend) / SUM(reports.result)) as rate')
+                ->join('departments', 'departments.id', '=', 'users.department_id')
+                ->selectRaw('contents.user_id as user_id, users.name as user_name, departments.name as department_name, SUM(reports.spend) as money, SUM(reports.result) as result, (SUM(reports.spend) / SUM(reports.result)) as rate')
                 ->where('elements.social_level', config('system.insight.types.campaign'));
 
             $dataChart = Report::join('elements', 'reports.element_id', '=', 'elements.id')
                 ->join('contents', 'elements.content_id', '=', 'contents.id')
                 ->join('users', 'contents.user_id', '=', 'users.id')
+                ->join('departments', 'departments.id', '=', 'users.department_id')
                 ->where('elements.social_level', config('system.insight.types.campaign'));
 
 
@@ -231,7 +229,7 @@ class BasicController extends Controller
 
 
             foreach ($dataTmp as $item) {
-                $dataByUser[0] .= ", '".$item->user_name."'";
+                $dataByUser[0] .= ", '".$item->department_name."'";
                 $dataByUser[1] .= ", ".$item->money;
                 $dataByUser[2] .= ", ".$item->rate;
             }
