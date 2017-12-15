@@ -74,7 +74,18 @@ class Helpers {
 
     public static function contentListForUpdate()
     {
-        return Content::pluck('social_name', 'id')->whereNull('user_id')->all();
+        $contents = Content::all();
+
+        $data = [];
+
+        foreach ($contents as $content) {
+            $data[$content->id] = $content->social_name;
+
+            if ($content->user_id) {
+                $data[$content->id] .= ' Owned by user '.$content->user->name;
+            }
+        }
+        return $data;
     }
 
     public static function getListUserInGroup()
