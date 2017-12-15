@@ -82,7 +82,7 @@ class Helpers {
             $data[$content->id] = $content->social_name;
 
             if ($content->user_id) {
-                $data[$content->id] .= ' Owned by user '.$content->user->name;
+                $data[$content->id] .= ' (Owned by user '.$content->user->name.")";
             }
         }
         return $data;
