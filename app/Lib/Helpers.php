@@ -69,12 +69,17 @@ class Helpers {
     {
         $user = Sentinel::getUser();
 
-        if ($user->isAdmin() || $user->isSuperAdmin()) {
-            return User::where('status', 1)->pluck('name', 'id')->toArray();
+        if ($user->isAdmin()) {
+            return User::where('status', 1)
+                ->pluck('name', 'id')
+                ->all();
         }
 
         if ($user->isManager()) {
-            return User::where('status', 1)->where('department_id', $user->department_id)->pluck('name', 'id')->toArray();
+            return User::where('status', 1)
+                ->where('department_id', $user->department_id)
+                ->pluck('name', 'id')
+                ->all();
         }
 
         return [$user->id => $user->name];

@@ -15,7 +15,7 @@
                 </li>
 
 
-            @if ($currentUser->isSuperAdmin())
+            @if ($currentUser->isAdmin())
 
                 <li class="has-submenu">
                     <a href="#"><i class="md md-class"></i>Hệ thống</a>

@@ -128,7 +128,7 @@ class User extends EloquentUser implements
 
     public function hasAccess($permissions)
     {
-        if ($this->isSuperAdmin()) {
+        if ($this->isAdmin()) {
             return true;
         }
 
@@ -137,16 +137,11 @@ class User extends EloquentUser implements
 
     public function hasAnyAccess($permissions)
     {
-        if ($this->isSuperAdmin()) {
+        if ($this->isAdmin()) {
             return true;
         }
 
         return parent::hasAnyAccess($permissions);
-    }
-
-    public function isSuperAdmin()
-    {
-        return $this->isAdmin();
     }
 
     public static function create(array $attributes = [])
@@ -265,10 +260,6 @@ class User extends EloquentUser implements
 
     public function checkRole($slug)
     {
-        if ($this->isSuperAdmin()) {
-            return true;
-        }
-
         $roles = $this->roles->pluck('slug')->toArray();
 
         if (in_array($slug, $roles)) {
@@ -280,12 +271,12 @@ class User extends EloquentUser implements
 
     public function getAllUsersInGroup()
     {
-        if ($this->isAdmin() || $this->isSuperAdmin()) {
-            return static::where('status', 1)->pluck('id')->toArray();
+        if ($this->isAdmin()) {
+            return static::where('status', 1)->pluck('id')->all();
         }
 
         if ($this->isManager()) {
-            return static::where('status', 1)->where('department_id', $this->department_id)->pluck('id')->toArray();
+            return static::where('status', 1)->where('department_id', $this->department_id)->pluck('id')->all();
         }
 
         return [$this->id];
