@@ -76,4 +76,76 @@ class Report extends Model
             ->rawColumns(['checkbox'])
             ->make(true);
     }
+
+    public static function exportToExcel($request)
+    {
+        ini_set('memory_limit', '2048M');
+
+        $query = static::with('element');
+
+        if ($request->filled('filter_user_id')) {
+            $query->whereHas('element', function ($q1) use ($request) {
+                $q1->whereHas('content', function ($q2) use ($request) {
+                    $q2->where('map_user_id', $request->get('filter_user_id'));
+                });
+            });
+
+        }
+
+        if ($request->filled('filter_department_id')) {
+            $query->whereHas('element', function ($q1) use ($request) {
+                $q1->whereHas('content', function ($q2) use ($request) {
+                    $q2->whereHas('mapUser', function ($q3) use ($request) {
+                        $q3->where('department_id', $request->get('filter_department_id'));
+                    });
+                });
+            });
+
+        }
+
+        if ($request->filled('filter_type')) {
+            $query->whereHas('element', function($q) use($request) {
+                $q->where('social_level', $request->get('filter_type'));
+            });
+        }
+
+        if ($request->filled('filter_date')) {
+            $dateRange = explode(' - ', $request->get('filter_date'));
+            $query->whereDate('date', '>=', Carbon::createFromFormat('d/m/Y', $dateRange[0])->toDateString());
+            $query->whereDate('date', '<=', Carbon::createFromFormat('d/m/Y', $dateRange[1])->toDateString());
+        }
+
+        $reports = $query->get();
+
+        return (new static())->createExcellFile($reports);
+    }
+
+    public function createExcellFile($reports)
+    {
+        $objReader = \PHPExcel_IOFactory::createReader('Excel2007');
+        $objPHPExcel = $objReader->load(resource_path('templates/results.xlsx'));
+
+        $row = 2;
+        foreach ($reports as $report) {
+            $objPHPExcel->getActiveSheet()->setCellValue('A'.$row, $row - 1)
+                ->setCellValue('B'.$row, $report->date)
+                ->setCellValue('C'.$row, $report->element->social_id)
+                ->setCellValue('D'.$row, $report->element->social_name)
+                ->setCellValue('E'.$row, config('system.insight.values.'.$report->element->social_level))
+                ->setCellValue('F'.$row, config('system.social_type_values.'.$report->element->social_type))
+                ->setCellValue('G'.$row, $report->result)
+                ->setCellValue('H'.$row, $report->cost_per_result)
+                ->setCellValue('I'.$row, $report->spend);
+
+            $row++;
+        }
+
+        $objWriter = \PHPExcel_IOFactory::createWriter($objPHPExcel, 'Excel2007');
+
+        $path = 'reports_'.date('Y_m_d_His').'.xlsx';
+
+        $objWriter->save(storage_path('app/public/' . $path));
+
+        return redirect('/storage/' . $path);
+    }
 }

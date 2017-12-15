@@ -27,4 +27,8 @@ class ReportsController extends Controller
         return Report::getDataTables($request);
     }
 
+    public function export(Request $request)
+    {
+        return Report::exportToExcel($request);
+    }
 }

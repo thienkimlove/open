@@ -69,5 +69,4 @@ class Content extends Model
             ->make(true);
     }
 
-
 }

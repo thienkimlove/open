@@ -36,6 +36,8 @@ Route::group(['middleware' => 'acl'], function() {
     Route::post('contents/update-map-user', 'ContentsController@updateMapUser')->name('contents.updateMapUser');
     Route::resource('contents', 'ContentsController');
 
+    Route::get('reports/export-to-excel', 'ReportsController@export')->name('reports.export');
+
     Route::get('reports.dataTables', ['uses' => 'ReportsController@dataTables', 'as' => 'reports.dataTables']);
     Route::resource('reports', 'ReportsController');
 
