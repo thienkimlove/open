@@ -60,7 +60,7 @@ class User extends EloquentUser implements
 
     public static function getDataTables($request)
     {
-        $user = static::select('id', 'name', 'email', 'status', 'created_at', 'department_id')->with('roles', 'department', 'maps');
+        $user = static::select('id', 'name', 'email', 'status', 'created_at', 'department_id')->with('roles', 'department', 'contents');
 
         $currentUser = Sentinel::getUser();
 
