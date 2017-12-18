@@ -53,7 +53,7 @@ class Helpers {
     public static function getAdvertiserList()
     {
         $currentUser = Sentinel::getUser();
-        return Content::pluck('social_name', 'id')->where('user_id', $currentUser->id)->all();
+        return Content::where('user_id', $currentUser->id)->pluck('social_name', 'id')->all();
     }
 
 
