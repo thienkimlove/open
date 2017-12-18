@@ -301,6 +301,7 @@
                         d.user_id = $('select[name=user_id]').val();
                         d.type = $('select[name=type]').val();
                         d.department_id = $('select[name=department_id]').val();
+                        d.content_id = $('select[name=content_id]').val();
                     }
                 },
                 columns: [
