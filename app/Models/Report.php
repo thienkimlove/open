@@ -56,6 +56,12 @@ class Report extends Model
                     });
                 }
 
+                if ($request->filled('content_id')) {
+                    $query->whereHas('element', function($q) use($request) {
+                        $q->where('content_id', $request->get('content_id'));
+                    });
+                }
+
                 if ($request->filled('date')) {
                     $dateRange = explode(' - ', $request->get('date'));
                     $query->whereDate('date', '>=', Carbon::createFromFormat('d/m/Y', $dateRange[0])->toDateString());

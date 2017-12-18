@@ -79,6 +79,17 @@
                                 <input class="form-control input-daterange-datepicker" type="text" name="date" value="{{ \Carbon\Carbon::today()->format('d/m/Y') }} - {{ \Carbon\Carbon::today()->format('d/m/Y') }}" placeholder="Theo ngày" style="width: 200px;"/>
                             </div>
 
+
+                            @if (!Sentinel::getUser()->isAdmin() && !Sentinel::getUser()->isManager())
+
+                            <div class="form-group m-l-10">
+                                <label class="sr-only" for="">Theo tài khoản</label>
+                                {!! Form::select('content_id', ['' => '--- Chọn Tài khoản ---'] + Helpers::getAdvertiserList(), ['class' => 'form-control']) !!}
+                            </div>
+
+                            @endif
+
+
                             <div class="form-group m-l-10">
                                 <label class="sr-only" for="">Loại</label>
                                 {!! Form::select('type', ['' => '--- Chọn Loại ---'] + config('system.insight.values'), config('system.insight.types.campaign'), ['class' => 'form-control']) !!}

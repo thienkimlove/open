@@ -50,6 +50,13 @@ class Helpers {
        return Role::pluck('name', 'id')->all();
     }
 
+    public static function getAdvertiserList()
+    {
+        $currentUser = Sentinel::getUser();
+        return Content::pluck('social_name', 'id')->where('user_id', $currentUser->id)->all();
+    }
+
+
     public static function userList()
     {
         return User::pluck('name', 'id')->all();
