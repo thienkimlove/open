@@ -84,7 +84,7 @@
 
                             <div class="form-group m-l-10">
                                 <label class="sr-only" for="">Theo tài khoản</label>
-                                {!! Form::select('content_id', ['' => '--- Chọn Tài khoản ---'] + Helpers::getAdvertiserList(), ['class' => 'form-control']) !!}
+                                {!! Form::select('content_id', ['' => '--- Chọn Tài khoản ---'] + Helpers::getAdvertiserList(), null, ['class' => 'form-control']) !!}
                             </div>
 
                             @endif
