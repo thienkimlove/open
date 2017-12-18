@@ -35,13 +35,29 @@ class ContentsController extends Controller
 
 
         $user = Sentinel::getUser();
+        \DB::beginTransaction();
+        try {
 
-        Content::whereIn('id', $request->get('status', []))
-            ->update([
-                'user_id' => $user->id,
-            ]);
+            Content::whereIn('id', $request->get('contents', []))
+                ->where('user_id', $user->id)
+                ->update([
+                    'user_id' => null,
+                ]);
 
-        flash()->success('Thành công', 'Đã cập nhật');
+            Content::whereIn('id', $request->get('status', []))
+                ->update([
+                    'user_id' => $user->id,
+                ]);
+
+            \DB::commit();
+
+            flash()->success('Thành công', 'Đã cập nhật');
+
+        } catch (\Exception $e) {
+            \DB::rollBack();
+            
+            flash()->error('Lỗi', $e->getMessage());
+        }
 
         return redirect('/');
     }

@@ -67,6 +67,7 @@
                                         <td>{{ $content->social_name }}</td>
                                         <td>{!! $content->status ? '<i class="ion ion-checkmark-circled text-success"></i>' : '<i class="ion ion-close-circled text-danger"></i>'  !!} </td>
                                         <td> {!! Form::checkbox('status[]', $content->id, ($content->user_id == $currentUser->id) ? 1 : 0, ['data-plugin' => 'switchery', 'data-color' => '#81c868']) !!}<span class="lbl"></span>
+                                            <input type="hidden" name="contents[]" value="{{$content->id}}" />
                                         </td>
                                     </tr>
                                     @endforeach
