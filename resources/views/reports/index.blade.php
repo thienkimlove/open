@@ -118,8 +118,7 @@
                     <tr>
                         <th style="width: 10px !important;"><input name="select_all" value="1" type="checkbox" style="display: none"></th>
                         <th width="10%">Date</th>
-                        <th width="10%">SocialID</th>
-                        <th width="30%">SocialName</th>
+                        <th width="40%">SocialName</th>
                         <th width="10%">Level</th>
                         <th width="10%">Type</th>
                         <th width="10%">Result</th>
@@ -295,7 +294,6 @@
                 columns: [
                     {data: 'checkbox', name: 'checkbox', orderable: false, searchable: false},
                     {data: 'date', name: 'date'},
-                    {data: 'social_id', name: 'social_id'},
                     {data: 'social_name', name: 'social_name'},
                     {data: 'social_level', name: 'social_level'},
                     {data: 'social_type', name: 'social_type'},

@@ -55,7 +55,7 @@ class ContentsController extends Controller
 
         } catch (\Exception $e) {
             \DB::rollBack();
-            
+
             flash()->error('Lỗi', $e->getMessage());
         }
 
