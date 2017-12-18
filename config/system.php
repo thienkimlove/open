@@ -15,13 +15,11 @@ return [
 
     'insight' => [
         'types' => [
-            'account' => 1,
             'campaign' => 2,
             'adset' => 3,
             'ad' => 4,
         ],
         'values' => [
-            1 => 'AdAccount',
             2 => 'Campaign',
             3 => 'AdSet',
             4 => 'Ad',
