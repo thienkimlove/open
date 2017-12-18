@@ -14,7 +14,7 @@ class ChangeFieldSpendForTableReports extends Migration
     public function up()
     {
         Schema::table('reports', function (Blueprint $table) {
-            $table->double('spend')->change();
+            $table->string('spend')->change();
         });
     }
 
@@ -26,7 +26,7 @@ class ChangeFieldSpendForTableReports extends Migration
     public function down()
     {
         Schema::table('reports', function (Blueprint $table) {
-            $table->float('spend')->change();
+            $table->string('spend')->change();
         });
     }
 }
