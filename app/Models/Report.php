@@ -73,6 +73,14 @@ class Report extends Model
                 return $report->element->social_id;
             })->addColumn('social_level', function ($report) {
                 return config('system.insight.values.'.$report->element->social_level);
+            })->addColumn('username', function ($report) {
+                return $report->element->content->user->name;
+            })->addColumn('department', function ($report) {
+                return isset($report->element->content->user->department)? $report->element->content->user->department->name : '';
+            })->addColumn('social_id', function ($report) {
+                return $report->element->social_id;
+            })->addColumn('social_level', function ($report) {
+                return config('system.insight.values.'.$report->element->social_level);
             })->addColumn('social_type', function ($report) {
                 return config('system.social_type_values.'.$report->element->social_type);
             })
