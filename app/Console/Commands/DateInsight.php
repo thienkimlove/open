@@ -112,10 +112,20 @@ class DateInsight extends Command
                 $element = $element->first();
                 $insightDate = Carbon::parse($insight['date_start'])->toDateString();
                 $result = 0;
-                if (in_array($insight['objective'], array_keys(config('system.insight.map'))) && isset($insight['unique_actions'])) {
+                $cost_per_result = 0;
+                if (in_array($insight['objective'], array_keys(config('system.insight.map'))) && isset($insight['actions'])) {
                     foreach ($insight['actions'] as $action) {
                         if ($action['action_type'] == config('system.insight.map.'.$insight['objective'])) {
                             $result = $action['value'];
+                            break;
+                        }
+                    }
+                }
+
+                if (in_array($insight['objective'], array_keys(config('system.insight.map'))) && isset($insight['cost_per_action_type'])) {
+                    foreach ($insight['cost_per_action_type'] as $action) {
+                        if ($action['action_type'] == config('system.insight.map.'.$insight['objective'])) {
+                            $cost_per_result = $action['value'];
                             break;
                         }
                     }
@@ -126,7 +136,7 @@ class DateInsight extends Command
                     'element_id' => $element->id,
                 ], [
                     'result' => $result,
-                    'cost_per_result' => $insight['cost_per_action_type'],
+                    'cost_per_result' => $cost_per_result,
                     'spend' => $insight['spend'],
                     'json_data' => json_encode($insight, true)
                 ]);
