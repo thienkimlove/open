@@ -30,7 +30,7 @@ return [
             'LINK_CLICKS' => 'link_click',
             'MESSAGES' => 'link_click',
             'MULTIPLE' => 'link_click',
-            'CONVERSIONS' => 'offsite_conversion',
+            'CONVERSIONS' => 'offsite_conversion.fb_pixel_add_to_cart',
         ]
     ],
 

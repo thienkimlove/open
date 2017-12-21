@@ -207,12 +207,7 @@
 
 @section('inline_scripts')
     <script type="text/javascript">
-        var resultTotal = 0;
-        var cprTotal = 0;
         var spendTotal = 0;
-
-        var resultTotalSelected = 0;
-        var cprTotalSelected = 0;
         var spendTotalSelected = 0;
 
         var rows_selected = [];
@@ -226,22 +221,14 @@
 
         function updateTotalNumber(type, data) {
             if (type == 1) {
-                resultTotalSelected += intVal(data.result);
-                cprTotalSelected += intVal(data.cost_per_result);
                 spendTotalSelected += intVal(data.spend);
             } else {
-                resultTotalSelected -= intVal(data.result);
-                cprTotalSelected -= intVal(data.cost_per_result);
                 spendTotalSelected -= intVal(data.spend);
             }
 
             if (rows_selected.length == 0) {
-                $('div.dataTables_scrollFoot #result_total').html($.number(resultTotal));
-                $('div.dataTables_scrollFoot #cpr_total').html($.number(cprTotal));
                 $('div.dataTables_scrollFoot #spent_total').html($.number(spendTotal));
             } else {
-                $('div.dataTables_scrollFoot #result_total').html(resultTotalSelected);
-                $('div.dataTables_scrollFoot #cpr_total').html($.number(cprTotalSelected));
                 $('div.dataTables_scrollFoot #spent_total').html($.number(spendTotalSelected));
             }
         }
@@ -326,22 +313,6 @@
                             typeof i === 'number' ?
                                 i : 0;
                     };
-
-                    // computing column Total of the complete result
-                    resultTotal = api
-                        .column( 6 )
-                        .data()
-                        .reduce( function (a, b) {
-                            return intVal(a) + intVal(b);
-                        }, 0 );
-
-                    cprTotal = api
-                        .column( 7 )
-                        .data()
-                        .reduce( function (a, b) {
-                            return intVal(a) + intVal(b);
-                        }, 0 );
-
                     spendTotal = api
                         .column( 8 )
                         .data()
@@ -351,13 +322,8 @@
 
                     // Update footer by showing the total with the reference of the column index
                     $( api.column( 0 ).footer() ).html('Total');
-                    $( api.column( 6 ).footer() ).html($.number(resultTotal));
-                    $( api.column( 7 ).footer() ).html($.number(cprTotal));
                     $( api.column( 8 ).footer() ).html($.number(spendTotal));
 
-//                    $('#result_total').html($.number(resultTotal));
-//                    $('#cpr_total').html($.number(cprTotal));
-//                    $('#spent_total').html($.number(spendTotal));
                 }
             });
 

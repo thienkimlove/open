@@ -113,7 +113,7 @@ class DateInsight extends Command
                 $insightDate = Carbon::parse($insight['date_start'])->toDateString();
                 $result = 0;
                 if (in_array($insight['objective'], array_keys(config('system.insight.map'))) && isset($insight['unique_actions'])) {
-                    foreach ($insight['unique_actions'] as $action) {
+                    foreach ($insight['actions'] as $action) {
                         if ($action['action_type'] == config('system.insight.map.'.$insight['objective'])) {
                             $result = $action['value'];
                             break;
@@ -126,7 +126,7 @@ class DateInsight extends Command
                     'element_id' => $element->id,
                 ], [
                     'result' => $result,
-                    'cost_per_result' => $insight['cost_per_total_action'],
+                    'cost_per_result' => $insight['cost_per_action_type'],
                     'spend' => $insight['spend'],
                     'json_data' => json_encode($insight, true)
                 ]);
