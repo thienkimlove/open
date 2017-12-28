@@ -91,6 +91,8 @@ class GetElement extends Command
         $start_date = Carbon::now()->toDateString();
         $end_date = Carbon::now()->toDateString();
 
+        $socialAccount = null;
+
         $params = [
             'time_range' => [
                 "since" => $start_date,
@@ -101,79 +103,91 @@ class GetElement extends Command
         Api::init(config('system.facebook.app_id'), config('system.facebook.app_secret'), $adAccount->account->api_token);
         Api::instance();
 
-        $socialAccount = new AdAccount('act_'.$adAccount->social_id);
-
-        $campaignFields = $this->getCampaignFields();
-        $adSetFields = $this->getAdSetFields();
-        $adFields = $this->getAdFields();
-
-        foreach ($socialAccount->getCampaigns($campaignFields, $params) as $campaign) {
-
-            $data = [];
-
-            foreach ($campaignFields as $field) {
-                $data[$field] = $campaign->{$field};
-            }
-
-            Element::updateOrCreate([
-                'social_id' => $campaign->id,
-                'social_type' => config('system.social_type.facebook'),
-                'social_level' => config('system.insight.types.campaign')
-            ], [
-                'content_id' => $adAccount->id,
-                'social_name' => $campaign->name,
-                'social_parent' => $campaign->account_id,
-                'social_status' => ($campaign->status == 'ACTIVE') ? true : false,
-                'json_data' => json_encode($data, true)
+        try {
+            $socialAccount = new AdAccount('act_'.$adAccount->social_id);
+        } catch (\Exception $e) {
+            \Log::info($e->getMessage());
+            $adAccount->update([
+                'status' => false
             ]);
 
         }
 
-        foreach ($socialAccount->getAdSets($adSetFields, $params) as $adSet) {
+        if ($socialAccount) {
+            $campaignFields = $this->getCampaignFields();
+            $adSetFields = $this->getAdSetFields();
+            $adFields = $this->getAdFields();
 
-            $data = [];
+            foreach ($socialAccount->getCampaigns($campaignFields, $params) as $campaign) {
 
-            foreach ($adSetFields as $field) {
-                $data[$field] = $adSet->{$field};
+                $data = [];
+
+                foreach ($campaignFields as $field) {
+                    $data[$field] = $campaign->{$field};
+                }
+
+                Element::updateOrCreate([
+                    'social_id' => $campaign->id,
+                    'social_type' => config('system.social_type.facebook'),
+                    'social_level' => config('system.insight.types.campaign')
+                ], [
+                    'content_id' => $adAccount->id,
+                    'social_name' => $campaign->name,
+                    'social_parent' => $campaign->account_id,
+                    'social_status' => ($campaign->status == 'ACTIVE') ? true : false,
+                    'json_data' => json_encode($data, true)
+                ]);
+
             }
 
-            Element::updateOrCreate([
-                'social_id' => $adSet->id,
-                'social_type' => config('system.social_type.facebook'),
-                'social_level' => config('system.insight.types.adset')
-            ], [
-                'content_id' => $adAccount->id,
-                'social_name' => $adSet->name,
-                'social_parent' => $adSet->campaign_id,
-                'social_status' => ($adSet->status == 'ACTIVE') ? true : false,
-                'json_data' => json_encode($data, true)
-            ]);
+            foreach ($socialAccount->getAdSets($adSetFields, $params) as $adSet) {
+
+                $data = [];
+
+                foreach ($adSetFields as $field) {
+                    $data[$field] = $adSet->{$field};
+                }
+
+                Element::updateOrCreate([
+                    'social_id' => $adSet->id,
+                    'social_type' => config('system.social_type.facebook'),
+                    'social_level' => config('system.insight.types.adset')
+                ], [
+                    'content_id' => $adAccount->id,
+                    'social_name' => $adSet->name,
+                    'social_parent' => $adSet->campaign_id,
+                    'social_status' => ($adSet->status == 'ACTIVE') ? true : false,
+                    'json_data' => json_encode($data, true)
+                ]);
+
+            }
+
+
+
+            foreach ($socialAccount->getAds($adFields, $params) as $ad) {
+
+                $data = [];
+
+                foreach ($adFields as $field) {
+                    $data[$field] = $ad->{$field};
+                }
+
+                Element::updateOrCreate([
+                    'social_id' => $ad->id,
+                    'social_type' => config('system.social_type.facebook'),
+                    'social_level' => config('system.insight.types.ad')
+                ], [
+                    'content_id' => $adAccount->id,
+                    'social_name' => $ad->name,
+                    'social_parent' => $ad->adset_id,
+                    'social_status' => ($ad->status == 'ACTIVE') ? true : false,
+                    'json_data' => json_encode($data, true)
+                ]);
+
+            }
 
         }
 
-
-
-        foreach ($socialAccount->getAds($adFields, $params) as $ad) {
-
-            $data = [];
-
-            foreach ($adFields as $field) {
-                $data[$field] = $ad->{$field};
-            }
-
-            Element::updateOrCreate([
-                'social_id' => $ad->id,
-                'social_type' => config('system.social_type.facebook'),
-                'social_level' => config('system.insight.types.ad')
-            ], [
-                'content_id' => $adAccount->id,
-                'social_name' => $ad->name,
-                'social_parent' => $ad->adset_id,
-                'social_status' => ($ad->status == 'ACTIVE') ? true : false,
-                'json_data' => json_encode($data, true)
-            ]);
-
-        }
 
     }
 
