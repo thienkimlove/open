@@ -179,6 +179,10 @@ class GetElement extends Command
             $adAccount->update([
                 'status' => false
             ]);
+
+            Element::where('content_id', $adAccount->id)->update([
+                'social_status' => false
+            ]);
         }
 
     }
