@@ -141,6 +141,7 @@ class DateInsight extends Command
                     'json_data' => json_encode($insight, true)
                 ]);
 
+                Element::where('id', $element->id)->update(['social_status' => true]);
             }
         }
 
@@ -165,11 +166,15 @@ class DateInsight extends Command
 
 
         $requests = [];
-        $storeSocialId = [];
 
         DB::beginTransaction();
         $elementIds = $elements->pluck('id')->all();
         try {
+
+            Element::whereIn('id', $elementIds)->update([
+                'social_status' => false
+            ]);
+
             foreach ($elements as $element) {
 
                 $levelType = null;
@@ -197,8 +202,6 @@ class DateInsight extends Command
                 ];
 
                 $requests[] = $fb->request('GET', '/'.$element->social_id.'/insights', $params);
-
-                $storeSocialId[] = ['level' => $levelType, 'social_id' => $element->social_id];
             }
 
 
@@ -210,12 +213,7 @@ class DateInsight extends Command
                     if ($response->isError()) {
                         $e = $response->getThrownException();
                         $this->line($e->getMessage());
-                        //$this->line("KEY=".$key);
                         $this->line("SocialId=".json_encode($storeSocialId[$key], true));
-
-                        Element::where('social_id', $storeSocialId[$key]["social_id"])->where('social_level', $storeSocialId[$key]["level"])->where('social_type', config('system.social_type.facebook'))->update([
-                            'social_status' => false
-                        ]);
                     } else {
                         //$this->line('Working with Fb Response..');
                         $content = json_decode($response->getBody(), true);
