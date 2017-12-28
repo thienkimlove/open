@@ -210,10 +210,14 @@ class DateInsight extends Command
                     if ($response->isError()) {
                         $e = $response->getThrownException();
                         $this->line($e->getMessage());
-                        $this->line("KEY=".$key);
+                        //$this->line("KEY=".$key);
                         $this->line("SocialId=".json_encode($storeSocialId[$key], true));
+
+                        Element::where('social_id', $storeSocialIdp[$key]["social_id"])->where('social_level', $storeSocialIdp[$key]["level"])->where('social_type', config('system.social_type.facebook'))->update([
+                            'social_status' => false
+                        ]);
                     } else {
-                        $this->line('Working with Fb Response..');
+                        //$this->line('Working with Fb Response..');
                         $content = json_decode($response->getBody(), true);
                         if (!empty($content['data'])) {
                             foreach ($content['data'] as $insight) {
