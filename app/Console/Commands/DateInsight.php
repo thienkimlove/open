@@ -206,6 +206,7 @@ class DateInsight extends Command
                     if ($response->isError()) {
                         $e = $response->getThrownException();
                         $this->line($e->getMessage());
+                        $this->line("KEY=".$key);
                     } else {
                         $this->line('Working with Fb Response..');
                         $content = json_decode($response->getBody(), true);
