@@ -213,7 +213,7 @@ class DateInsight extends Command
                         //$this->line("KEY=".$key);
                         $this->line("SocialId=".json_encode($storeSocialId[$key], true));
 
-                        Element::where('social_id', $storeSocialIdp[$key]["social_id"])->where('social_level', $storeSocialIdp[$key]["level"])->where('social_type', config('system.social_type.facebook'))->update([
+                        Element::where('social_id', $storeSocialId[$key]["social_id"])->where('social_level', $storeSocialId[$key]["level"])->where('social_type', config('system.social_type.facebook'))->update([
                             'social_status' => false
                         ]);
                     } else {
