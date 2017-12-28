@@ -91,7 +91,6 @@ class GetElement extends Command
         $start_date = Carbon::now()->toDateString();
         $end_date = Carbon::now()->toDateString();
 
-        $socialAccount = null;
 
         $params = [
             'time_range' => [
@@ -104,25 +103,6 @@ class GetElement extends Command
             Api::init(config('system.facebook.app_id'), config('system.facebook.app_secret'), $adAccount->account->api_token);
             Api::instance();
             $socialAccount = new AdAccount('act_'.$adAccount->social_id);
-        } catch (\FacebookAds\Http\Exception\AuthorizationException $e) {
-            \Log::info($e->getMessage());
-            $adAccount->update([
-                'status' => false
-            ]);
-
-            $socialAccount = null;
-
-        } catch (\Exception $e) {
-            \Log::info($e->getMessage());
-            $adAccount->update([
-                'status' => false
-            ]);
-
-            $socialAccount = null;
-
-        }
-
-        if ($socialAccount) {
             $campaignFields = $this->getCampaignFields();
             $adSetFields = $this->getAdSetFields();
             $adFields = $this->getAdFields();
@@ -194,9 +174,12 @@ class GetElement extends Command
                 ]);
 
             }
-
+        }  catch (\Exception $e) {
+            \Log::info($e->getMessage());
+            $adAccount->update([
+                'status' => false
+            ]);
         }
-
 
     }
 
