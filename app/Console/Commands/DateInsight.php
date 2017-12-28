@@ -165,6 +165,8 @@ class DateInsight extends Command
 
 
         $requests = [];
+        $storeSocialId = [];
+
         DB::beginTransaction();
         $elementIds = $elements->pluck('id')->all();
         try {
@@ -195,6 +197,8 @@ class DateInsight extends Command
                 ];
 
                 $requests[] = $fb->request('GET', '/'.$element->social_id.'/insights', $params);
+
+                $storeSocialId[] = ['level' => $levelType, 'social_id' => $element->social_id];
             }
 
 
@@ -207,6 +211,7 @@ class DateInsight extends Command
                         $e = $response->getThrownException();
                         $this->line($e->getMessage());
                         $this->line("KEY=".$key);
+                        $this->line("SocialId=".json_encode($storeSocialId[$key], true));
                     } else {
                         $this->line('Working with Fb Response..');
                         $content = json_decode($response->getBody(), true);
