@@ -211,11 +211,8 @@ class DateInsight extends Command
 
                 foreach ($responses as $key => $response) {
                     if ($response->isError()) {
-                        $e = $response->getThrownException();
-                        $this->line($e->getMessage());
-                        $this->line("SocialId=".json_encode($storeSocialId[$key], true));
+                        $this->line($response->getThrownException()->getMessage());
                     } else {
-                        //$this->line('Working with Fb Response..');
                         $content = json_decode($response->getBody(), true);
                         if (!empty($content['data'])) {
                             foreach ($content['data'] as $insight) {
