@@ -104,6 +104,14 @@ class GetElement extends Command
             Api::init(config('system.facebook.app_id'), config('system.facebook.app_secret'), $adAccount->account->api_token);
             Api::instance();
             $socialAccount = new AdAccount('act_'.$adAccount->social_id);
+        } catch (\FacebookAds\Http\Exception\AuthorizationException $e) {
+            \Log::info($e->getMessage());
+            $adAccount->update([
+                'status' => false
+            ]);
+
+            $socialAccount = null;
+
         } catch (\Exception $e) {
             \Log::info($e->getMessage());
             $adAccount->update([
