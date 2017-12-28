@@ -111,6 +111,8 @@ class GetElement extends Command
                 'status' => false
             ]);
 
+            $socialAccount = null;
+
         }
 
         if ($socialAccount) {
