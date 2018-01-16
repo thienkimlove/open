@@ -25,8 +25,25 @@ class Report extends Model
 
     public static function getDataTables($request)
     {
-        $report = static::select('*')->with('element');
+        $report = static::select('*')->with('element.content.user.department');
 
+        $currentUser = Sentinel::getUser();
+
+        if ($currentUser->isAdmin()) {
+            //
+        } elseif ($currentUser->isManager()) {
+            $report->whereHas('element', function ($q1) use ($request, $currentUser) {
+                $q1->whereHas('content', function ($q2) use ($request, $currentUser) {
+                    $q2->whereIn('user_id', $currentUser->getAllUsersInGroup());
+                });
+            });
+        } else {
+            $report->whereHas('element', function ($q1) use ($request, $currentUser) {
+                $q1->whereHas('content', function ($q2) use ($request, $currentUser) {
+                    $q2->where('user_id', $currentUser->id);
+                });
+            });
+        }
 
         return DataTables::of($report)
             ->filter(function ($query) use ($request) {

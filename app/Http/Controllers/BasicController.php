@@ -206,10 +206,14 @@ class BasicController extends Controller
                 ->where('elements.social_level', config('system.insight.types.campaign'));
 
 
-
-            if ($user->isManager()) {
+            if ($user->isAdmin()) {
+//                $data = $data->where('contents.user_id', $user->id);
+                $dataTmp = $dataTmp->groupBy('department_id');
+//                $dataChart = $dataChart->where('contents.user_id', $user->id);
+            } elseif ($user->isManager()) {
                 $data = $data->whereIn('contents.user_id', $user->getAllUsersInGroup());
-                $dataTmp = $dataTmp->whereIn('contents.user_id', $user->getAllUsersInGroup());
+                $dataTmp = $dataTmp->whereIn('contents.user_id', $user->getAllUsersInGroup())
+                    ->groupBy('user_id');
                 $dataChart = $dataChart->whereIn('contents.user_id', $user->getAllUsersInGroup());
             } elseif (!$user->isAdmin()) {
                 $data = $data->where('contents.user_id', $user->id);
@@ -219,7 +223,7 @@ class BasicController extends Controller
 
             $data = $data->first()->toArray();
 
-            $dataTmp = $dataTmp->groupBy('user_id')->get();
+            $dataTmp = $dataTmp->get();
 
             $dataByUser = [
                 0 => '',
@@ -227,9 +231,12 @@ class BasicController extends Controller
                 2 => '',
             ];
 
-
             foreach ($dataTmp as $item) {
-                $dataByUser[0] .= ", '".$item->department_name."'";
+                if ($user->isManager()) {
+                    $dataByUser[0] .= ", '".$item->user_name."'";
+                } elseif ($user->isAdmin()) {
+                    $dataByUser[0] .= ", '".$item->department_name."'";
+                }
                 $dataByUser[1] .= ", ".$item->money;
                 $dataByUser[2] .= ", ".$item->rate;
             }
