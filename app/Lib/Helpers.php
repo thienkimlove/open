@@ -310,21 +310,27 @@ class Helpers {
                     }
                 } elseif ($insight['objective'] == 'MESSAGES') {
 
-                    if ($actionResult) {
-                        $result = array_values($actionResult)[0];
+                    foreach ($actionResult as $key => $value) {
+                        if (strpos($key, 'onsite_conversion') !== FALSE) {
+                            $result = $value;
+                        }
                     }
-
-                    if ($costResult) {
-                        $cost_per_result = array_values($costResult)[0];
+                    foreach ($costResult as $key => $value) {
+                        if (strpos($key, 'onsite_conversion') !== FALSE) {
+                            $cost_per_result = $value;
+                        }
                     }
                 } elseif ($insight['objective'] == 'LEAD_GENERATION') {
 
-                    if (isset($actionResult['leadgen.other'])) {
-                        $result = $actionResult['leadgen.other'];
+                    foreach ($actionResult as $key => $value) {
+                        if (strpos($key, 'leadgen') !== FALSE) {
+                            $result = $value;
+                        }
                     }
-
-                    if (isset($costResult['leadgen.other'])) {
-                        $cost_per_result = $costResult['leadgen.other'];
+                    foreach ($costResult as $key => $value) {
+                        if (strpos($key, 'leadgen') !== FALSE) {
+                            $cost_per_result = $value;
+                        }
                     }
 
                 } elseif ($insight['objective'] == 'POST_ENGAGEMENT') {
