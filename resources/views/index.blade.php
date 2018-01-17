@@ -64,7 +64,7 @@
                                     <tr>
                                         <td>{{ $content->social_id }}</td>
                                         <td>{{ $content->social_name }}</td>
-                                        <td> {!! Form::checkbox('status[]', $content->id, \App\Lib\Helpers::getStatusForTempAdAccount($content->social_id,$currenUser), ['data-plugin' => 'switchery', 'data-color' => '#81c868']) !!}<span class="lbl"></span>
+                                        <td> {!! Form::checkbox('status[]', $content->id, \App\Lib\Helpers::getStatusForTempAdAccount($content->social_id,$currentUser), ['data-plugin' => 'switchery', 'data-color' => '#81c868']) !!}<span class="lbl"></span>
                                             <input type="hidden" name="contents[]" value="{{$content->id}}" />
                                         </td>
                                     </tr>
