@@ -99,9 +99,9 @@ class BasicController extends Controller
 
         if (request()->filled('code')) {
 
-            DB::beginTransaction();
-
             try {
+
+                DB::beginTransaction();
 
                 $fb = new Facebook([
                     'app_id' => config('system.facebook.app_id'),
@@ -180,21 +180,18 @@ class BasicController extends Controller
                 ->join('users', 'contents.user_id', '=', 'users.id')
                 ->join('departments', 'departments.id', '=', 'users.department_id')
                 ->selectRaw('SUM(reports.spend) as total_money, SUM(reports.result) as total_result, (SUM(reports.spend) / SUM(reports.result)) as rate')
-                ->whereDate('reports.date', Carbon::today()->toDateString())
-                ->where('elements.social_level', config('system.insight.types.campaign'));
+                ->whereDate('reports.date', Carbon::today()->toDateString());
 
             $dataTmp = Report::join('elements', 'reports.element_id', '=', 'elements.id')
                 ->join('contents', 'elements.content_id', '=', 'contents.id')
                 ->join('users', 'contents.user_id', '=', 'users.id')
                 ->join('departments', 'departments.id', '=', 'users.department_id')
-                ->selectRaw('contents.user_id as user_id, users.name as user_name, departments.name as department_name, SUM(reports.spend) as money, SUM(reports.result) as result, (SUM(reports.spend) / SUM(reports.result)) as rate')
-                ->where('elements.social_level', config('system.insight.types.campaign'));
+                ->selectRaw('contents.user_id as user_id, users.name as user_name, departments.name as department_name, SUM(reports.spend) as money, SUM(reports.result) as result, (SUM(reports.spend) / SUM(reports.result)) as rate');
 
             $dataChart = Report::join('elements', 'reports.element_id', '=', 'elements.id')
                 ->join('contents', 'elements.content_id', '=', 'contents.id')
                 ->join('users', 'contents.user_id', '=', 'users.id')
-                ->join('departments', 'departments.id', '=', 'users.department_id')
-                ->where('elements.social_level', config('system.insight.types.campaign'));
+                ->join('departments', 'departments.id', '=', 'users.department_id');
 
 
             if ($user->isAdmin()) {
