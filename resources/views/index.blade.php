@@ -39,7 +39,7 @@
 
                 <div class="modal-header">
                     <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
-                    <h4 class="modal-title" id="custom-width-modalLabel">Cài đặt Ads Accounts (Total Fetched : <b>{{ $contents->count() }}</b>)</h4>
+                    <h4 class="modal-title" id="custom-width-modalLabel">Cài đặt Ads Accounts (Total Fetched : <b>{{ count($contents) }}</b>)</h4>
                 </div>
                 <div class="modal-body">
                     <div class="row">
