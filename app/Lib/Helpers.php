@@ -356,6 +356,18 @@ class Helpers {
                             $cost_per_result = $value;
                         }
                     }
+                } elseif ($insight['objective'] == 'PAGE_LIKES') {
+
+                    foreach ($actionResult as $key => $value) {
+                        if (strpos($key, 'like') !== FALSE) {
+                            $result = $value;
+                        }
+                    }
+                    foreach ($costResult as $key => $value) {
+                        if (strpos($key, 'like') !== FALSE) {
+                            $cost_per_result = $value;
+                        }
+                    }
                 }
 
                 if ($result == 0) {
