@@ -285,11 +285,9 @@ class Helpers {
                     foreach ($actionResult as $key => $value) {
                         if (strpos($key, 'offsite_conversion') !== FALSE) {
                             $result = $value;
-                        }
-                    }
-                    foreach ($costResult as $key => $value) {
-                        if (strpos($key, 'offsite_conversion') !== FALSE) {
-                            $cost_per_result = $value;
+                            if (isset($costResult[$key])) {
+                                $cost_per_result = $costResult[$key];
+                            }
                         }
                     }
 
@@ -298,24 +296,21 @@ class Helpers {
                     foreach ($actionResult as $key => $value) {
                         if (strpos($key, 'video_view') !== FALSE) {
                             $result = $value;
+                            if (isset($costResult[$key])) {
+                                $cost_per_result = $costResult[$key];
+                            }
                         }
                     }
-                    foreach ($costResult as $key => $value) {
-                        if (strpos($key, 'video_view') !== FALSE) {
-                            $cost_per_result = $value;
-                        }
-                    }
+
 
                 } elseif ($insight['objective'] == 'LINK_CLICKS') {
 
                     foreach ($actionResult as $key => $value) {
                         if (strpos($key, 'link_click') !== FALSE) {
                             $result = $value;
-                        }
-                    }
-                    foreach ($costResult as $key => $value) {
-                        if (strpos($key, 'link_click') !== FALSE) {
-                            $cost_per_result = $value;
+                            if (isset($costResult[$key])) {
+                                $cost_per_result = $costResult[$key];
+                            }
                         }
                     }
 
@@ -324,11 +319,9 @@ class Helpers {
                     foreach ($actionResult as $key => $value) {
                         if (strpos($key, 'onsite_conversion') !== FALSE) {
                             $result = $value;
-                        }
-                    }
-                    foreach ($costResult as $key => $value) {
-                        if (strpos($key, 'onsite_conversion') !== FALSE) {
-                            $cost_per_result = $value;
+                            if (isset($costResult[$key])) {
+                                $cost_per_result = $costResult[$key];
+                            }
                         }
                     }
                 } elseif ($insight['objective'] == 'LEAD_GENERATION') {
@@ -336,36 +329,31 @@ class Helpers {
                     foreach ($actionResult as $key => $value) {
                         if (strpos($key, 'leadgen') !== FALSE) {
                             $result = $value;
+                            if (isset($costResult[$key])) {
+                                $cost_per_result = $costResult[$key];
+                            }
                         }
                     }
-                    foreach ($costResult as $key => $value) {
-                        if (strpos($key, 'leadgen') !== FALSE) {
-                            $cost_per_result = $value;
-                        }
-                    }
+
 
                 } elseif ($insight['objective'] == 'POST_ENGAGEMENT') {
-
                     foreach ($actionResult as $key => $value) {
                         if (strpos($key, 'post_engagement') !== FALSE) {
                             $result = $value;
+                            if (isset($costResult[$key])) {
+                                $cost_per_result = $costResult[$key];
+                            }
                         }
                     }
-                    foreach ($costResult as $key => $value) {
-                        if (strpos($key, 'post_engagement') !== FALSE) {
-                            $cost_per_result = $value;
-                        }
-                    }
+
                 } elseif ($insight['objective'] == 'PAGE_LIKES') {
 
                     foreach ($actionResult as $key => $value) {
                         if (strpos($key, 'like') !== FALSE) {
                             $result = $value;
-                        }
-                    }
-                    foreach ($costResult as $key => $value) {
-                        if (strpos($key, 'like') !== FALSE) {
-                            $cost_per_result = $value;
+                            if (isset($costResult[$key])) {
+                                $cost_per_result = $costResult[$key];
+                            }
                         }
                     }
                 }
