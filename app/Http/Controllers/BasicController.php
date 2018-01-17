@@ -4,8 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Lib\Helpers;
 use App\Models\Account;
-use App\Models\Content;
 use App\Models\Report;
+use App\Models\TempAdAccount;
 use Carbon\Carbon;
 use Facebook\Facebook;
 use Log;
@@ -94,7 +94,7 @@ class BasicController extends Controller
         $contents = [];
 
         if (request()->filled('type')) {
-            $contents = Content::where('account_id', request()->get('type'))->get();
+            $contents = TempAdAccount::where('account_id', request()->get('type'))->get();
         }
 
         if (request()->filled('code')) {
@@ -155,24 +155,15 @@ class BasicController extends Controller
 
                 $fields = Helpers::getAdAccountFields();
                 $accounts = $me->getAdAccounts($fields);
+                TempAdAccount::where('account_id', $fbAccount->id)->delete();
                 foreach ($accounts as $account) {
-
-                 Content::updateOrCreate([
+                    TempAdAccount::create([
                         'social_id' => $account->account_id,
-                        'social_type' => config('system.social_type.facebook')
-                    ], [
+                        'social_type' => config('system.social_type.facebook'),
                         'account_id' => $fbAccount->id,
                         'social_name' => $account->name,
-                        'amount_spent' => $account->amount_spent,
-                        'balance' => $account->balance,
-                        'currency' => $account->currency,
-                        'min_campaign_group_spend_cap' => $account->min_campaign_group_spend_cap,
-                        'min_daily_budget' => $account->min_daily_budget,
-                        'next_bill_date' => $account->next_bill_date,
-                        'spend_cap' => $account->spend_cap,
+                        'currency' => $account->currency
                     ]);
-
-
                 }
                 DB::commit();
 

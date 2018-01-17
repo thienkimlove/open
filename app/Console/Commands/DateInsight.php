@@ -140,8 +140,6 @@ class DateInsight extends Command
                     'spend' => $insight['spend'],
                     'json_data' => json_encode($insight, true)
                 ]);
-
-                Element::where('id', $element->id)->update(['social_status' => true]);
             }
         }
 
@@ -151,29 +149,27 @@ class DateInsight extends Command
     private function batchInsight($elements)
     {
 
-        $token = $elements->first()->content->account->api_token;
-
-        $fb = new Facebook([
-            'app_id' => config('system.facebook.app_id'),
-            'app_secret' =>  config('system.facebook.app_secret'),
-            'default_graph_version' => 'v2.11',
-            'default_access_token' => $token
-        ]);
-
-
-        $start_date = Carbon::now()->subDays(7)->toDateString();
-        $end_date = Carbon::now()->toDateString();
-
-
-        $requests = [];
-
-        DB::beginTransaction();
-        $elementIds = $elements->pluck('id')->all();
         try {
 
-            Element::whereIn('id', $elementIds)->update([
-                'social_status' => false
+            $token = $elements->first()->content->account->api_token;
+
+            $fb = new Facebook([
+                'app_id' => config('system.facebook.app_id'),
+                'app_secret' =>  config('system.facebook.app_secret'),
+                'default_graph_version' => 'v2.11',
+                'default_access_token' => $token
             ]);
+
+            $start_date = Carbon::now()->subDays(2)->toDateString();
+            $end_date = Carbon::now()->toDateString();
+
+
+            $requests = [];
+
+            DB::beginTransaction();
+
+            $elementIds = $elements->pluck('id')->all();
+
 
             foreach ($elements as $element) {
 
@@ -246,8 +242,7 @@ class DateInsight extends Command
     {
         #start get insight for today.
 
-        $activeElements = Element::where('social_status', true)
-            ->where('social_type', config('system.social_type.facebook'))
+        $activeElements = Element::where('social_type', config('system.social_type.facebook'))
            /* ->where(function($q){
                 $q->whereRaw('DATE(last_insight_updated) < CURDATE()');
                 $q->orWhereNull('last_insight_updated');

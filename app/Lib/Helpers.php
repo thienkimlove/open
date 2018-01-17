@@ -9,22 +9,11 @@ use Facades\App\Models\Role;
 use Carbon\Carbon;
 use Sentinel;
 use Facebook\Facebook;
+use App\Models\Element;
+use FacebookAds\Object\AdAccount;
+use FacebookAds\Api;
 
 class Helpers {
-
-    public static function getAdAccountFields() {
-        return array(
-            'account_id',
-            'name',
-            'amount_spent',
-            'balance',
-            'currency',
-            'min_campaign_group_spend_cap',
-            'min_daily_budget',
-            'next_bill_date',
-            'spend_cap',
-        );
-    }
 
     public static function getRedirectFb()
     {
@@ -125,6 +114,131 @@ class Helpers {
         }
         return $in;
     }
+
+    //check if this ad account already assigned for this current user or not.
+
+    public static function getStatusForTempAdAccount($socialId, $currentUser)
+    {
+        return Content::where('social_id', $socialId)
+            ->where('social_type', config('system.social_type.facebook'))
+            ->where('user_id', $currentUser->id)
+            ->count() > 0 ? 1 : 0;
+    }
+
+    public static function getAdAccountFields() {
+        return array(
+            'account_id',
+            'name',
+            // 'amount_spent',
+            // 'balance',
+            'currency',
+            //  'min_campaign_group_spend_cap',
+            //  'min_daily_budget',
+            //   'next_bill_date',
+            //  'spend_cap',
+        );
+    }
+
+    public static function getCampaignFields() {
+        return array(
+            'id',
+            'name',
+            'account_id',
+            'boosted_object_id',
+            'buying_type',
+            'created_time',
+            'objective',
+            'start_time',
+            'stop_time',
+            'updated_time',
+            'status',
+        );
+    }
+
+    public static function getAdSetFields() {
+        return array(
+            'account_id',
+            'budget_remaining',
+            'campaign_id',
+            'created_time',
+            'daily_budget',
+            'destination_type',
+            'end_time',
+            'id',
+            'lifetime_budget',
+            'lifetime_imps',
+            'name',
+            'start_time',
+            'updated_time',
+            'status',
+        );
+    }
+
+    public static function getAdFields() {
+        return array(
+            'account_id',
+            'adset_id',
+            'campaign_id',
+            'created_time',
+            'id',
+            'name',
+            'updated_time',
+            'status',
+        );
+    }
+
+
+    public static function fetchAccountElements($adAccount)
+    {
+        # Get element  for account today.
+        $start_date = Carbon::now()->toDateString();
+        $end_date = Carbon::now()->toDateString();
+
+
+        $params = [
+            'time_range' => [
+                "since" => $start_date,
+                "until" => $end_date
+            ]
+        ];
+
+        try {
+            Api::init(config('system.facebook.app_id'), config('system.facebook.app_secret'), $adAccount->account->api_token);
+            Api::instance();
+            $socialAccount = new AdAccount('act_'.$adAccount->social_id);
+            $campaignFields = self::getCampaignFields();
+            //$adSetFields = self::getAdSetFields();
+            //$adFields = self::getAdFields();
+
+            foreach ($socialAccount->getCampaigns($campaignFields, $params) as $campaign) {
+
+                $data = [];
+
+                foreach ($campaignFields as $field) {
+                    $data[$field] = $campaign->{$field};
+                }
+
+                Element::updateOrCreate([
+                    'social_id' => $campaign->id,
+                    'social_type' => config('system.social_type.facebook'),
+                    'social_level' => config('system.insight.types.campaign')
+                ], [
+                    'content_id' => $adAccount->id,
+                    'social_name' => $campaign->name,
+                    'social_parent' => $campaign->account_id,
+                    'social_status' => ($campaign->status == 'ACTIVE') ? true : false,
+                    'json_data' => json_encode($data, true)
+                ]);
+
+            }
+
+        }  catch (\Exception $e) {
+            \Log::info($e->getMessage());
+        }
+
+    }
+
+
 
     public static function formatDatetime($datetime)
     {

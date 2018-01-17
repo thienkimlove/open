@@ -15,16 +15,10 @@ class Content extends Model
         'social_type',
         'status',
         'user_id',
-
         //attributes for account_level
-        'amount_spent',
-        'balance',
+
         'currency',
-        'min_campaign_group_spend_cap',
-        'min_daily_budget',
-        'next_bill_date',
-        'spend_cap',
-        'last_report_run',
+        'last_report_run'
     ];
 
 
@@ -42,7 +36,7 @@ class Content extends Model
 
     public static function getDataTables($request)
     {
-        $content = static::select('*')->with('user');
+        $content = static::select('*');
 
 
         return DataTables::of($content)

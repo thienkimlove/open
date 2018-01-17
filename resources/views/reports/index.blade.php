@@ -89,12 +89,6 @@
 
                             @endif
 
-
-                            <div class="form-group m-l-10">
-                                <label class="sr-only" for="">Loại</label>
-                                {!! Form::select('type', ['' => '--- Chọn Loại ---'] + config('system.insight.values'), config('system.insight.types.campaign'), ['class' => 'form-control']) !!}
-                            </div>
-
                             <button type="submit" value="search" name="search" class="btn btn-success waves-effect waves-light m-l-15">Tìm kiếm</button>
                         </form>
 
@@ -104,7 +98,6 @@
                                 {{Form::hidden('filter_department_id', null)}}
                                 {{Form::hidden('filter_user_id', null)}}
                                 {{Form::hidden('filter_date', null)}}
-                                {{Form::hidden('filter_type', null)}}
 
                                 <button class="btn btn-danger waves-effect waves-light m-t-15" value="export" type="submit" name="export">
                                     <i class="fa fa-download"></i>&nbsp; Xuất Excel

@@ -39,7 +39,7 @@
 
                 <div class="modal-header">
                     <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
-                    <h4 class="modal-title" id="custom-width-modalLabel">Cài đặt Ads Accounts</h4>
+                    <h4 class="modal-title" id="custom-width-modalLabel">Cài đặt Ads Accounts (Total Fetched : <b>{{ $contents->count() }}</b>)</h4>
                 </div>
                 <div class="modal-body">
                     <div class="row">
@@ -53,7 +53,6 @@
                                     <tr>
                                         <th>Social ID</th>
                                         <th>Social name</th>
-                                        <th>Trạng thái</th>
                                         <th>On / Off</th>
                                     </tr>
                                     </thead>
@@ -65,8 +64,7 @@
                                     <tr>
                                         <td>{{ $content->social_id }}</td>
                                         <td>{{ $content->social_name }}</td>
-                                        <td>{!! $content->status ? '<i class="ion ion-checkmark-circled text-success"></i>' : '<i class="ion ion-close-circled text-danger"></i>'  !!} </td>
-                                        <td> {!! Form::checkbox('status[]', $content->id, ($content->user_id == $currentUser->id) ? 1 : 0, ['data-plugin' => 'switchery', 'data-color' => '#81c868']) !!}<span class="lbl"></span>
+                                        <td> {!! Form::checkbox('status[]', $content->id, \App\Lib\Helpers::getStatusForTempAdAccount($content->social_id,$currenUser), ['data-plugin' => 'switchery', 'data-color' => '#81c868']) !!}<span class="lbl"></span>
                                             <input type="hidden" name="contents[]" value="{{$content->id}}" />
                                         </td>
                                     </tr>

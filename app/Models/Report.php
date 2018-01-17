@@ -67,11 +67,6 @@ class Report extends Model
 
                 }
 
-                if ($request->filled('type')) {
-                    $query->whereHas('element', function($q) use($request) {
-                        $q->where('social_level', $request->get('type'));
-                    });
-                }
 
                 if ($request->filled('content_id')) {
                     $query->whereHas('element', function($q) use($request) {
@@ -134,11 +129,7 @@ class Report extends Model
 
         }
 
-        if ($request->filled('filter_type')) {
-            $query->whereHas('element', function($q) use($request) {
-                $q->where('social_level', $request->get('filter_type'));
-            });
-        }
+
 
         if ($request->filled('filter_date')) {
             $dateRange = explode(' - ', $request->get('filter_date'));
