@@ -20,7 +20,6 @@ class RemoveFieldFromContents extends Migration
                 'min_campaign_group_spend_cap',
                 'next_bill_date',
                 'spend_cap',
-                'spend_cap',
             ]);
 
         });
