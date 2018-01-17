@@ -79,19 +79,20 @@ class Report extends Model
                     $query->whereDate('date', '>=', Carbon::createFromFormat('d/m/Y', $dateRange[0])->toDateString());
                     $query->whereDate('date', '<=', Carbon::createFromFormat('d/m/Y', $dateRange[1])->toDateString());
                 }
-            })->addColumn('social_name', function ($report) {
+            })
+            ->addColumn('social_name', function ($report) {
                 return $report->element->social_name;
-            })->addColumn('social_id', function ($report) {
+            })
+            ->addColumn('social_id', function ($report) {
                 return $report->element->social_id;
-            })->addColumn('social_level', function ($report) {
-                return config('system.insight.values.'.$report->element->social_level);
-            })->addColumn('username', function ($report) {
+            })
+            ->addColumn('username', function ($report) {
                 return $report->element->content->user->name;
-            })->addColumn('department', function ($report) {
+            })
+            ->addColumn('department', function ($report) {
                 return isset($report->element->content->user->department)? $report->element->content->user->department->name : '';
-            })->addColumn('social_id', function ($report) {
-                return $report->element->social_id;
-            })->addColumn('social_type', function ($report) {
+            })
+            ->addColumn('social_type', function ($report) {
                 return config('system.social_type_values.'.$report->element->social_type);
             })
             ->addColumn('checkbox', function ($report) {
