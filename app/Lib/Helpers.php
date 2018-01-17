@@ -283,7 +283,7 @@ class Helpers {
 
             foreach ($actionResult as $key => $value) {
                 if (strpos($key, $configProcess[$insight['objective']]) !== FALSE) {
-                    if ($value < $result) {
+                    if (($result > 0 && $result > $value) || ($result == 0) ) {
                         $result = $value;
                         $rememberKey = $key;
                     }
