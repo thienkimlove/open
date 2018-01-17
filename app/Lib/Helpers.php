@@ -317,6 +317,16 @@ class Helpers {
                     if ($costResult) {
                         $cost_per_result = array_values($costResult)[0];
                     }
+                } elseif ($insight['objective'] == 'LEAD_GENERATION') {
+
+                    if (isset($actionResult['leadgen.other'])) {
+                        $result = $actionResult['leadgen.other'];
+                    }
+
+                    if (isset($costResult['leadgen.other'])) {
+                        $cost_per_result = $costResult['leadgen.other'];
+                    }
+
                 } elseif ($insight['objective'] == 'POST_ENGAGEMENT') {
 
                     if (isset($actionResult['post_engagement'])) {
