@@ -245,6 +245,67 @@ class Helpers {
         return array_keys($fields);
     }
 
+    public static function getResult($insight)
+    {
+        $result = 0;
+        $cost_per_result = 0;
+
+        $actionResult = [];
+        $costResult = [];
+
+        if (isset($insight['actions'])) {
+            foreach ($insight['actions'] as $action) {
+                $actionResult[$action['action_type']] = $action['value'];
+            }
+        }
+
+        if (isset($insight['cost_per_action_type'])) {
+            foreach ($insight['cost_per_action_type'] as $action) {
+                $costResult[$action['action_type']] = $action['value'];
+            }
+        }
+
+        $configProcess = [
+            'CONVERSIONS' => 'offsite_conversion',
+            'VIDEO_VIEWS' => 'video_view',
+            'LINK_CLICKS' => 'link_click',
+            'MESSAGES' => 'onsite_conversion',
+            'LEAD_GENERATION' => 'leadgen',
+            'POST_ENGAGEMENT' => 'post_engagement',
+            'PAGE_LIKES' => 'like',
+        ];
+
+        if ($costResult && $actionResult && isset($configProcess[$insight['objective']])) {
+
+            $rememberKey = null;
+
+            //get min value from actions array base on objective keyword.
+
+            foreach ($actionResult as $key => $value) {
+                if (strpos($key, $configProcess[$insight['objective']]) !== FALSE) {
+                    if ($value < $result) {
+                        $result = $value;
+                        $rememberKey = $key;
+                    }
+                }
+            }
+            if ($rememberKey && isset($costResult[$rememberKey]))  {
+                $cost_per_result = $costResult[$rememberKey];
+            }
+        }
+
+
+        if ($result == 0) {
+            $result = $insight['total_actions'];
+        }
+
+        if ($cost_per_result == 0) {
+            $cost_per_result = $insight['cost_per_total_action'];
+        }
+
+        return [$result, $cost_per_result];
+
+    }
 
 
     public static function addToReport($insight)
@@ -262,111 +323,9 @@ class Helpers {
             if ($element->count() > 0) {
                 $element = $element->first();
                 $insightDate = Carbon::parse($insight['date_start'])->toDateString();
-                $result = 0;
-                $cost_per_result = 0;
-
-                $actionResult = [];
-                $costResult = [];
-
-                if (isset($insight['actions'])) {
-                    foreach ($insight['actions'] as $action) {
-                        $actionResult[$action['action_type']] = $action['value'];
-                    }
-                }
-
-                if (isset($insight['cost_per_action_type'])) {
-                    foreach ($insight['cost_per_action_type'] as $action) {
-                        $costResult[$action['action_type']] = $action['value'];
-                    }
-                }
-
-                if ($insight['objective'] == 'CONVERSIONS') {
-
-                    foreach ($actionResult as $key => $value) {
-                        if (strpos($key, 'offsite_conversion') !== FALSE) {
-                            $result = $value;
-                            if (isset($costResult[$key])) {
-                                $cost_per_result = $costResult[$key];
-                            }
-                        }
-                    }
-
-                } elseif ($insight['objective'] == 'VIDEO_VIEWS') {
-
-                    foreach ($actionResult as $key => $value) {
-                        if (strpos($key, 'video_view') !== FALSE) {
-                            $result = $value;
-                            if (isset($costResult[$key])) {
-                                $cost_per_result = $costResult[$key];
-                            }
-                        }
-                    }
 
 
-                } elseif ($insight['objective'] == 'LINK_CLICKS') {
-
-                    foreach ($actionResult as $key => $value) {
-                        if (strpos($key, 'link_click') !== FALSE) {
-                            $result = $value;
-                            if (isset($costResult[$key])) {
-                                $cost_per_result = $costResult[$key];
-                            }
-                        }
-                    }
-
-                } elseif ($insight['objective'] == 'MESSAGES') {
-
-                    foreach ($actionResult as $key => $value) {
-                        if (strpos($key, 'onsite_conversion') !== FALSE) {
-                            $result = $value;
-                            if (isset($costResult[$key])) {
-                                $cost_per_result = $costResult[$key];
-                            }
-                        }
-                    }
-                } elseif ($insight['objective'] == 'LEAD_GENERATION') {
-
-                    foreach ($actionResult as $key => $value) {
-                        if (strpos($key, 'leadgen') !== FALSE) {
-                            $result = $value;
-                            if (isset($costResult[$key])) {
-                                $cost_per_result = $costResult[$key];
-                            }
-                        }
-                    }
-
-
-                } elseif ($insight['objective'] == 'POST_ENGAGEMENT') {
-                    foreach ($actionResult as $key => $value) {
-                        if (strpos($key, 'post_engagement') !== FALSE) {
-                            $result = $value;
-                            if (isset($costResult[$key])) {
-                                $cost_per_result = $costResult[$key];
-                            }
-                        }
-                    }
-
-                } elseif ($insight['objective'] == 'PAGE_LIKES') {
-
-                    foreach ($actionResult as $key => $value) {
-                        if (strpos($key, 'like') !== FALSE) {
-                            $result = $value;
-                            if (isset($costResult[$key])) {
-                                $cost_per_result = $costResult[$key];
-                            }
-                        }
-                    }
-                }
-
-                if ($result == 0) {
-                    $result = $insight['total_actions'];
-                }
-
-                if ($cost_per_result == 0) {
-                    $cost_per_result = $insight['cost_per_total_action'];
-                }
-
-
+                list($result, $cost_per_result) = self::getResult($insight);
 
                 Report::updateOrCreate([
                     'date' => $insightDate,
