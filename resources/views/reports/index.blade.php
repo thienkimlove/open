@@ -122,7 +122,7 @@
                     <tr>
                         <th style="width: 10px !important;"><input name="select_all" value="1" type="checkbox" style="display: none"></th>
                         <th width="10%">Date</th>
-                        <th width="10%">Username</th>
+                        <th width="20%">Username</th>
                         <th width="30%">Campaign</th>
                         <th width="10%">Type</th>
                         <th width="10%">Result</th>
@@ -133,7 +133,6 @@
                     <tfoot align="right" id="">
                     <tr>
                         <th>Total</th>
-                        <th></th>
                         <th></th>
                         <th></th>
                         <th></th>
@@ -288,7 +287,6 @@
                     {data: 'date', name: 'date'},
                     {data: 'username', name: 'username'},
                     {data: 'social_name', name: 'social_name'},
-                    {data: 'social_level', name: 'social_level'},
                     {data: 'social_type', name: 'social_type'},
                     {data: 'result', name: 'result'},
                     {data: 'cost_per_result', name: 'impressions'},
