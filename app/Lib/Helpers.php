@@ -282,6 +282,13 @@ class Helpers {
                     }
                 }
 
+                if ($result == 0) {
+                    if ($insight['objective'] == 'CONVERSIONS') {
+                        $result = $insight['total_actions'];
+                        $cost_per_result = $insight['cost_per_total_action'];
+                    }
+                }
+
                 Report::updateOrCreate([
                     'date' => $insightDate,
                     'element_id' => $element->id,
