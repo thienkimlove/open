@@ -264,30 +264,70 @@ class Helpers {
                 $insightDate = Carbon::parse($insight['date_start'])->toDateString();
                 $result = 0;
                 $cost_per_result = 0;
-                if (in_array($insight['objective'], array_keys(config('system.insight.map'))) && isset($insight['actions'])) {
+
+                $actionResult = [];
+                $costResult = [];
+
+                if (isset($insight['actions'])) {
                     foreach ($insight['actions'] as $action) {
-                        if ($action['action_type'] == config('system.insight.map.'.$insight['objective'])) {
-                            $result = $action['value'];
-                            break;
-                        }
+                        $actionResult[$action['action_type']] = $action['value'];
                     }
                 }
 
-                if (in_array($insight['objective'], array_keys(config('system.insight.map'))) && isset($insight['cost_per_action_type'])) {
+                if (isset($insight['cost_per_action_type'])) {
                     foreach ($insight['cost_per_action_type'] as $action) {
-                        if ($action['action_type'] == config('system.insight.map.'.$insight['objective'])) {
-                            $cost_per_result = $action['value'];
-                            break;
-                        }
+                        $costResult[$action['action_type']] = $action['value'];
+                    }
+                }
+
+                if ($insight['objective'] == 'CONVERSIONS') {
+
+                    if (isset($actionResult['offsite_conversion'])) {
+                        $result = $actionResult['offsite_conversion'];
+                    }
+
+                    if (isset($costResult['offsite_conversion'])) {
+                        $cost_per_result = $costResult['offsite_conversion'];
+                    }
+
+                } elseif ($insight['objective'] == 'VIDEO_VIEWS') {
+
+                    if (isset($actionResult['video_view'])) {
+                        $result = $actionResult['video_view'];
+                    }
+
+                    if (isset($costResult['video_view'])) {
+                        $cost_per_result = $costResult['video_view'];
+                    }
+                } elseif ($insight['objective'] == 'LINK_CLICKS') {
+
+                    if (isset($actionResult['link_click'])) {
+                        $result = $actionResult['link_click'];
+                    }
+
+                    if (isset($costResult['link_click'])) {
+                        $cost_per_result = $costResult['link_click'];
+                    }
+                } elseif ($insight['objective'] == 'MESSAGES') {
+
+                    if ($actionResult) {
+                        $result = array_values($actionResult)[0];
+                    }
+
+                    if ($costResult) {
+                        $cost_per_result = array_values($costResult)[0];
                     }
                 }
 
                 if ($result == 0) {
-                    if ($insight['objective'] == 'CONVERSIONS') {
-                        $result = $insight['total_actions'];
-                        $cost_per_result = $insight['cost_per_total_action'];
-                    }
+                    $result = $insight['total_actions'];
                 }
+
+                if ($cost_per_result == 0) {
+                    $cost_per_result = $insight['cost_per_total_action'];
+                }
+
+
 
                 Report::updateOrCreate([
                     'date' => $insightDate,
