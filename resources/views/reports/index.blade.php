@@ -304,7 +304,7 @@
                                 i : 0;
                     };
                     spendTotal = api
-                        .column( 8 )
+                        .column( 7 )
                         .data()
                         .reduce( function (a, b) {
                             return intVal(a) + intVal(b);
@@ -312,7 +312,7 @@
 
                     // Update footer by showing the total with the reference of the column index
                     $( api.column( 0 ).footer() ).html('Total');
-                    $( api.column( 8 ).footer() ).html($.number(spendTotal));
+                    $( api.column( 7 ).footer() ).html($.number(spendTotal));
 
                 }
             });
