@@ -123,8 +123,7 @@
                         <th style="width: 10px !important;"><input name="select_all" value="1" type="checkbox" style="display: none"></th>
                         <th width="10%">Date</th>
                         <th width="10%">Username</th>
-                        <th width="30%">SocialName</th>
-                        <th width="10%">Level</th>
+                        <th width="30%">Campaign</th>
                         <th width="10%">Type</th>
                         <th width="10%">Result</th>
                         <th width="10%">CostPerResult</th>

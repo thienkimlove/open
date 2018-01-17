@@ -10,7 +10,6 @@ class Element extends Model
         'content_id',
         'social_id',
         'social_type',
-        'social_level',
         'social_name',
         'social_parent',
         'social_status',
