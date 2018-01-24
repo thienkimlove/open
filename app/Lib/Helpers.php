@@ -2,6 +2,7 @@
 
 namespace App\Lib;
 
+use App\Models\Account;
 use App\Models\Content;
 use App\Models\Department;
 use App\Models\Report;
@@ -413,8 +414,24 @@ class Helpers {
             \Log::error($e->getMessage());
         }
 
+    }
 
+    public static function testAccount($accountId)
+    {
+        try {
+            $fbAccount = Account::find($accountId);
+            Api::init(config('system.facebook.app_id'), config('system.facebook.app_secret'), $fbAccount->api_token);
+            Api::instance();
+            $me = new \FacebookAds\Object\User($fbAccount->social_id);
 
+            $fields = Helpers::getAdAccountFields();
+            $accounts = $me->getAdAccounts($fields, ['limit' => 100]);
+
+            dd(count($accounts));
+
+        } catch (\Exception $e) {
+            dd($e->getMessage());
+        }
     }
 
 
