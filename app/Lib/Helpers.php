@@ -425,7 +425,7 @@ class Helpers {
             $me = new \FacebookAds\Object\User($fbAccount->social_id);
 
             $fields = Helpers::getAdAccountFields();
-            $accounts = $me->getAdAccounts($fields, ['limit' => 100]);
+            $accounts = $me->getAdAccounts($fields, ['limit' => 200]);
 
             dd(count($accounts));
 

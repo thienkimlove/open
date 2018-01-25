@@ -154,7 +154,7 @@ class BasicController extends Controller
                 $me = new User($fbAccount->social_id);
 
                 $fields = Helpers::getAdAccountFields();
-                $accounts = $me->getAdAccounts($fields, ['limit' => 100]);
+                $accounts = $me->getAdAccounts($fields, ['limit' => 200]);
                 TempAdAccount::where('account_id', $fbAccount->id)->delete();
                 foreach ($accounts as $account) {
                     TempAdAccount::create([
