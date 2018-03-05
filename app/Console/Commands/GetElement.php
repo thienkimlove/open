@@ -45,10 +45,11 @@ class GetElement extends Command
 
         $adAccounts = Content::whereNotNull('user_id')
             ->where('social_type', config('system.social_type.facebook'))
+            ->where('status', true)
             ->get();
 
         foreach ($adAccounts as $adAccount) {
-            Helpers::fetchAccountElements($adAccount);
-        }
+        Helpers::fetchAccountElements($adAccount);
+    }
     }
 }

@@ -67,18 +67,6 @@
 
                         </div>
 
-
-
-                        <div class="form-group">
-                            <label class="col-md-3 control-label">Danh sách Tài Khoản Quảng Cáo</label>
-                            <div class="col-md-9">
-                                {!! Form::select('contents[]',  ['' => '----- Chọn Tài Khoản -----'] + Helpers::contentListForCreate(), null, ['id' => 'contents', 'multiple' => true, 'class' => 'select2 select2-multiple', 'data-placeholder' => 'Choose Ad Accounts...']) !!}
-                            </div>
-
-                        </div>
-
-
-
                         <div class="form-group">
                             <label class="col-md-3 control-label">Trạng thái</label>
                             <div class="col-md-9">

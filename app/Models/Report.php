@@ -30,7 +30,11 @@ class Report extends Model
         $currentUser = Sentinel::getUser();
 
         if ($currentUser->isAdmin()) {
-            //
+            $report->whereHas('element', function ($q1) use ($request) {
+                $q1->whereHas('content', function ($q2) use ($request) {
+                    $q2->whereNotNull('user_id');
+                });
+            });
         } elseif ($currentUser->isManager()) {
             $report->whereHas('element', function ($q1) use ($request, $currentUser) {
                 $q1->whereHas('content', function ($q2) use ($request, $currentUser) {
@@ -75,9 +79,9 @@ class Report extends Model
                 }
 
                 if ($request->filled('date')) {
-                    $dateRange = explode(' - ', $request->get('date'));
-                    $query->whereDate('date', '>=', Carbon::createFromFormat('d/m/Y', $dateRange[0])->toDateString());
-                    $query->whereDate('date', '<=', Carbon::createFromFormat('d/m/Y', $dateRange[1])->toDateString());
+                    $dateRange = explode('-', $request->get('date'));
+                    $query->whereDate('date', '>=', Carbon::createFromFormat('d/m/Y', trim($dateRange[0]))->toDateString());
+                    $query->whereDate('date', '<=', Carbon::createFromFormat('d/m/Y', trim($dateRange[1]))->toDateString());
                 }
             })
             ->addColumn('social_name', function ($report) {
@@ -87,7 +91,7 @@ class Report extends Model
                 return $report->element->social_id;
             })
             ->addColumn('username', function ($report) {
-                return $report->element->content->user->name;
+                return isset($report->element->content->user->name) ? $report->element->content->user->name : '';
             })
             ->addColumn('department', function ($report) {
                 return isset($report->element->content->user->department)? $report->element->content->user->department->name : '';
@@ -98,8 +102,24 @@ class Report extends Model
             ->addColumn('checkbox', function ($report) {
                 return '<input type="checkbox" data-id="' . $report->id . '">';
             })
+            ->editColumn('spend', function ($report) {
+                return $report->getCorrectSpend();
+            })
+            ->editColumn('cost_per_result', function ($report) {
+                return $report->getCorrectSpend();
+            })
             ->rawColumns(['checkbox'])
             ->make(true);
+    }
+
+    public function getCorrectSpend()
+    {
+        return ($this->element->content->currency=='USD') ? 23000*$this->spend : $this->spend;
+    }
+
+    public function getCorrectCostPerResult()
+    {
+        return ($this->element->content->currency=='USD') ? 23000*$this->cost_per_result : $this->cost_per_result;
     }
 
     public static function exportToExcel($request)
@@ -131,9 +151,9 @@ class Report extends Model
 
 
         if ($request->filled('filter_date')) {
-            $dateRange = explode(' - ', $request->get('filter_date'));
-            $query->whereDate('date', '>=', Carbon::createFromFormat('d/m/Y', $dateRange[0])->toDateString());
-            $query->whereDate('date', '<=', Carbon::createFromFormat('d/m/Y', $dateRange[1])->toDateString());
+            $dateRange = explode('-', $request->get('filter_date'));
+            $query->whereDate('date', '>=', Carbon::createFromFormat('d/m/Y', trim($dateRange[0]))->toDateString());
+            $query->whereDate('date', '<=', Carbon::createFromFormat('d/m/Y', trim($dateRange[1]))->toDateString());
         }
 
         $reports = $query->get();
@@ -148,6 +168,9 @@ class Report extends Model
 
         $row = 2;
         foreach ($reports as $report) {
+
+
+
             $objPHPExcel->getActiveSheet()->setCellValue('A'.$row, $row - 1)
                 ->setCellValue('B'.$row, $report->date)
                 ->setCellValue('C'.$row, $report->element->social_id)
@@ -155,8 +178,8 @@ class Report extends Model
                 ->setCellValue('E'.$row, config('system.insight.values.'.$report->element->social_level))
                 ->setCellValue('F'.$row, config('system.social_type_values.'.$report->element->social_type))
                 ->setCellValue('G'.$row, $report->result)
-                ->setCellValue('H'.$row, $report->cost_per_result)
-                ->setCellValue('I'.$row, $report->spend);
+                ->setCellValue('H'.$row, $report->getCorrectCostPerResult())
+                ->setCellValue('I'.$row, $report->getCorrectSpend());
 
             $row++;
         }

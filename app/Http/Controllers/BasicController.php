@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Lib\Helpers;
 use App\Models\Account;
+use App\Models\Content;
 use App\Models\Report;
 use App\Models\TempAdAccount;
 use Carbon\Carbon;
@@ -101,8 +102,6 @@ class BasicController extends Controller
 
             try {
 
-                DB::beginTransaction();
-
                 $fb = new Facebook([
                     'app_id' => config('system.facebook.app_id'),
                     'app_secret' => config('system.facebook.app_secret'),
@@ -117,37 +116,25 @@ class BasicController extends Controller
 
                 $response = $fb->get('/me?fields=id,name', $accessToken);
                 $fbUser = $response->getGraphUser();
-                #check if FB user already existed and token is not expired.
 
-                $checkExisted = Account::where('social_id', $fbUser['id'])
-                    ->where('social_type', config('system.social_type.facebook'))
-                    ->get();
+                $helper = $fb->getOAuth2Client();
+                $accessTokenLong = $helper->getLongLivedAccessToken($accessToken);
 
-                $fbAccount = null;
+                DB::beginTransaction();
 
-                if ($checkExisted->count() > 0) {
-                    $accountExisted = $checkExisted->first();
-                    if ($accountExisted->api_token_start_date && $accountExisted->api_token_start_date->addDays(55) < Carbon::now()) {
-                        $fbAccount = $accountExisted;
-                    }
-                }
+                $fbAccount = Account::updateOrCreate([
+                    'social_id' => $fbUser['id'],
+                    'social_type' => config('system.social_type.facebook')
+                ], [
+                    'social_name' => $fbUser['name'],
+                    'api_token' => (string) $accessTokenLong,
+                    'api_token_start_date' => Carbon::now()->toDateTimeString(),
+                    'user_id' => $user->id,
+                    'status' => true,
+                ]);
 
-                #if not existed or long-token expired.
+                Content::where('account_id', $fbAccount->id)->update(['status' => true]);
 
-                if (!$fbAccount) {
-                    $helper = $fb->getOAuth2Client();
-                    $accessTokenLong = $helper->getLongLivedAccessToken($accessToken);
-
-                    $fbAccount = Account::updateOrCreate([
-                        'social_id' => $fbUser['id'],
-                        'social_type' => config('system.social_type.facebook')
-                    ], [
-                        'social_name' => $fbUser['name'],
-                        'api_token' => (string) $accessTokenLong,
-                        'api_token_start_date' => Carbon::now()->toDateTimeString(),
-                        'status' => true,
-                    ]);
-                }
 
                 Api::init(config('system.facebook.app_id'), config('system.facebook.app_secret'), $fbAccount->api_token);
                 Api::instance();
@@ -169,7 +156,7 @@ class BasicController extends Controller
 
                 return redirect('/?type='.$fbAccount->id);
 
-            } catch(\Exception $e) {
+            } catch (\Throwable $e) {
                 DB::rollback();
                 flash('error', $e->getMessage());
             }
@@ -179,14 +166,14 @@ class BasicController extends Controller
                 ->join('contents', 'elements.content_id', '=', 'contents.id')
                 ->join('users', 'contents.user_id', '=', 'users.id')
                 ->join('departments', 'departments.id', '=', 'users.department_id')
-                ->selectRaw('SUM(reports.spend) as total_money, SUM(reports.result) as total_result, (SUM(reports.spend) / SUM(reports.result)) as rate')
+                ->selectRaw('SUM(CASE WHEN contents.currency = "USD" THEN 23000*(reports.spend) ELSE reports.spend END) as total_money, SUM(reports.result) as total_result, (SUM(reports.spend) / SUM(reports.result)) as rate')
                 ->whereDate('reports.date', Carbon::today()->toDateString());
 
             $dataTmp = Report::join('elements', 'reports.element_id', '=', 'elements.id')
                 ->join('contents', 'elements.content_id', '=', 'contents.id')
                 ->join('users', 'contents.user_id', '=', 'users.id')
                 ->join('departments', 'departments.id', '=', 'users.department_id')
-                ->selectRaw('contents.user_id as user_id, users.name as user_name, departments.name as department_name, SUM(reports.spend) as money, SUM(reports.result) as result, (SUM(reports.spend) / SUM(reports.result)) as rate');
+                ->selectRaw('contents.user_id as user_id, users.name as user_name, departments.name as department_name, SUM(CASE WHEN contents.currency = "USD" THEN 23000*(reports.spend) ELSE reports.spend END) as money, SUM(reports.result) as result, (SUM(CASE WHEN contents.currency = "USD" THEN 23000*(reports.spend) ELSE reports.spend END) / SUM(reports.result)) as rate');
 
             $dataChart = Report::join('elements', 'reports.element_id', '=', 'elements.id')
                 ->join('contents', 'elements.content_id', '=', 'contents.id')
@@ -229,7 +216,7 @@ class BasicController extends Controller
                 $dataByUser[2] .= ", ".$item->rate;
             }
 
-            $dataChart = $dataChart->selectRaw('reports.date, SUM(reports.spend) as total_money, SUM(reports.result) as total_result, (SUM(reports.spend) / SUM(reports.result)) as rate')
+            $dataChart = $dataChart->selectRaw('reports.date, SUM(CASE WHEN contents.currency = "USD" THEN 23000*(reports.spend) ELSE reports.spend END) as total_money, SUM(reports.result) as total_result, (SUM(CASE WHEN contents.currency = "USD" THEN 23000*(reports.spend) ELSE reports.spend END) / SUM(reports.result)) as rate')
                 ->groupBy('reports.date')
                 ->orderBy('reports.date', 'desc')
                 ->limit(7)

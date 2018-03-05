@@ -93,8 +93,8 @@
         <form action="{{ route('visudo.login_as_user') }}" method="post">
             <select name="userId" onchange="this.form.submit()">
                 <option disabled selected>Sudo Su</option>
-                @foreach ($allUsers as $id => $email)
-                    <option value="{{ $id }}">{{ $email }}</option>
+                @foreach ($allUsers as $id => $name)
+                    <option value="{{ $id }}">{{ $name }}</option>
                 @endforeach
             </select>
 

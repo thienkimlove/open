@@ -8,7 +8,7 @@
     <!-- App Favicon icon -->
     <link rel="shortcut icon" href="">
     <!-- App Title -->
-    <title>{{ config('app.name') }}</title>
+    <title>OBD Ads System</title>
     <meta name="csrf_token" content="{{ csrf_token() }}" />
 
     @yield('styles', '')

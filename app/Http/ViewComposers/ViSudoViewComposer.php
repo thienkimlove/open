@@ -16,7 +16,7 @@ class ViSudoViewComposer
      */
     public function compose(View $view)
     {
-        $view->with('allUsers', $this->getUsers());
+        $view->with('allUsers', $this->getUserNames());
         $view->with('hasSudoed', $this->hasSudoed());
         $view->with('originalUser', $this->getOriginalUser());
         $view->with('currentUser', $this->getCurrentUser());
@@ -46,5 +46,10 @@ class ViSudoViewComposer
     protected function getUsers()
     {
         return User::orderBy('email')->pluck('email', 'id')->all();
+    }
+
+    protected function getUserNames()
+    {
+        return User::orderBy('name')->pluck('name', 'id')->all();
     }
 }

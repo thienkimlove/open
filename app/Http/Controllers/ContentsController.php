@@ -38,11 +38,12 @@ class ContentsController extends Controller
 
         $user = Sentinel::getUser();
 
-        DB::beginTransaction();
         try {
 
+            DB::beginTransaction();
+
             Content::where('user_id', $user->id)->update([
-                'status' => false
+                'user_id' => null
             ]);
 
             $tempAdAccounts = TempAdAccount::whereIn('id', $request->get('status'))
@@ -56,6 +57,7 @@ class ContentsController extends Controller
                 ], [
                     'social_name' => $tempAdAccount->social_name,
                     'currency' => $tempAdAccount->currency,
+                    'account_id' => $tempAdAccount->account_id,
                     'user_id' => $user->id,
                     'status' => true
                 ]);

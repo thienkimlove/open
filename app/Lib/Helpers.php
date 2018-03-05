@@ -67,16 +67,14 @@ class Helpers {
     }
 
 
-    public static function contentListForCreate()
+    public static function contentListForUpdate($userId)
     {
-        return Content::whereNull('user_id')->pluck('social_name', 'id')->all();
-    }
-
-    public static function contentListForUpdate()
-    {
-        $contents = Content::all();
 
         $data = [];
+
+        $accountIds = Account::where('user_id', $userId)->pluck('id')->all();
+        $contents = Content::whereIn('account_id', $accountIds)->get();
+
 
         foreach ($contents as $content) {
             $data[$content->id] = $content->social_name;
@@ -148,7 +146,6 @@ class Helpers {
             'id',
             'name',
             'account_id',
-            'boosted_object_id',
             'buying_type',
             'created_time',
             'objective',
@@ -347,71 +344,71 @@ class Helpers {
 
     public static function batchInsight($elements)
     {
+        $token = isset($elements->first()->content->account->api_token)? $elements->first()->content->account->api_token : null;
 
-        try {
-
-            $token = $elements->first()->content->account->api_token;
-
-            $fb = new Facebook([
-                'app_id' => config('system.facebook.app_id'),
-                'app_secret' =>  config('system.facebook.app_secret'),
-                'default_graph_version' => 'v2.11',
-                'default_access_token' => $token
-            ]);
-
+        if ($token) {
             $start_date = Carbon::now()->subDays(2)->toDateString();
             $end_date = Carbon::now()->toDateString();
-
-
             $requests = [];
 
-            DB::beginTransaction();
+            try {
 
-            $elementIds = $elements->pluck('id')->all();
+                $fb = new Facebook([
+                    'app_id' => config('system.facebook.app_id'),
+                    'app_secret' =>  config('system.facebook.app_secret'),
+                    'default_graph_version' => 'v2.11',
+                    'default_access_token' => $token
+                ]);
+
+                DB::beginTransaction();
+
+                $elementIds = $elements->pluck('id')->all();
+
+                foreach ($elements as $element) {
+
+                    $params = [
+                        'time_range' => [
+                            "since" => $start_date,
+                            "until" => $end_date
+                        ],
+                        'time_increment' => 1,
+                        'level' => AdsInsightsLevelValues::CAMPAIGN,
+                        'fields' => implode(',', self::getInsightFields())
+                    ];
+
+                    $requests[] = $fb->request('GET', '/'.$element->social_id.'/insights', $params);
+                }
 
 
-            foreach ($elements as $element) {
+                if ($requests) {
 
-                $params = [
-                    'time_range' => [
-                        "since" => $start_date,
-                        "until" => $end_date
-                    ],
-                    'time_increment' => 1,
-                    'level' => AdsInsightsLevelValues::CAMPAIGN,
-                    'fields' => implode(',', self::getInsightFields())
-                ];
+                    $responses = $fb->sendBatchRequest($requests);
 
-                $requests[] = $fb->request('GET', '/'.$element->social_id.'/insights', $params);
-            }
-
-
-            if ($requests) {
-
-                $responses = $fb->sendBatchRequest($requests);
-
-                foreach ($responses as $key => $response) {
-                    if ($response->isError()) {
-                        \Log::error($response->getThrownException()->getMessage());
-                    } else {
-                        $content = json_decode($response->getBody(), true);
-                        if (!empty($content['data'])) {
-                            foreach ($content['data'] as $insight) {
-                                self::addToReport($insight);
+                    foreach ($responses as $key => $response) {
+                        if ($response->isError()) {
+                            \Log::error($response->getThrownException()->getMessage());
+                        } else {
+                            $content = json_decode($response->getBody(), true);
+                            if (!empty($content['data'])) {
+                                foreach ($content['data'] as $insight) {
+                                    if ($insight) {
+                                        self::addToReport($insight);
+                                    }
+                                }
                             }
                         }
                     }
                 }
+
+                Element::whereIn('id', $elementIds)->update([
+                    'last_insight_updated' => Carbon::now()->toDateTimeString()
+                ]);
+
+                DB::commit();
+            } catch (\Throwable $e) {
+                DB::rollBack();
+                \Log::error($e->getMessage());
             }
-
-            Element::whereIn('id', $elementIds)->update([
-                'last_insight_updated' => Carbon::now()->toDateTimeString()
-            ]);
-
-            DB::commit();
-        } catch (\Exception $e) {
-            DB::rollBack();
-            \Log::error($e->getMessage());
         }
 
     }
@@ -434,6 +431,8 @@ class Helpers {
         }
     }
 
+
+    ## fetch for each contents.
 
     public static function fetchAccountElements($adAccount)
     {
@@ -463,25 +462,27 @@ class Helpers {
 
                 $data = [];
 
-                foreach ($campaignFields as $field) {
-                    $data[$field] = $campaign->{$field};
-                }
+                if (isset($campaign->id) && isset($campaign->name) && isset($campaign->account_id) && isset($campaign->status)) {
+                    foreach ($campaignFields as $field) {
+                        $data[$field] = $campaign->{$field};
+                    }
 
-                $element = Element::updateOrCreate([
-                    'social_id' => $campaign->id,
-                    'social_type' => config('system.social_type.facebook'),
-                ], [
-                    'content_id' => $adAccount->id,
-                    'social_name' => $campaign->name,
-                    'social_parent' => $campaign->account_id,
-                    'social_status' => ($campaign->status == 'ACTIVE') ? true : false,
-                    'json_data' => json_encode($data, true)
-                ]);
+                    $element = Element::updateOrCreate([
+                        'social_id' => $campaign->id,
+                        'social_type' => config('system.social_type.facebook'),
+                    ], [
+                        'content_id' => $adAccount->id,
+                        'social_name' => $campaign->name,
+                        'social_parent' => $campaign->account_id,
+                        'social_status' => ($campaign->status == 'ACTIVE') ? true : false,
+                        'json_data' => json_encode($data, true)
+                    ]);
 
-                $countReportToday = Report::where('date', Carbon::now()->toDateString())->where('element_id', $element->id)->count();
+                    $countReportToday = Report::where('date', Carbon::now()->toDateString())->where('element_id', $element->id)->count();
 
-                if ($countReportToday == 0) {
-                    $notHaveReportElementIds[] = $element->id;
+                    if ($countReportToday == 0) {
+                        $notHaveReportElementIds[] = $element->id;
+                    }
                 }
 
             }
@@ -493,8 +494,10 @@ class Helpers {
                 self::batchInsight($startReport);
             }
 
-        }  catch (\Exception $e) {
+        }  catch (\Throwable $e) {
             \Log::info($e->getMessage());
+            Account::find($adAccount->account_id)->update(['status' => false]);
+            Content::find($adAccount->id)->update(['status' => false]);
         }
 
     }

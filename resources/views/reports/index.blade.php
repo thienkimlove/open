@@ -324,7 +324,7 @@
                 // Get row data
                 var data = datatable.row($row).data();
 
-                console.log(data);
+                //console.log(data);
 
                 // Get row ID
                 var rowId = data.id;

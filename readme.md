@@ -1,53 +1,131 @@
-<p align="center"><img src="https://laravel.com/assets/img/components/logo-laravel.svg"></p>
+## About Site work.
 
-<p align="center">
-<a href="https://travis-ci.org/laravel/framework"><img src="https://travis-ci.org/laravel/framework.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://poser.pugx.org/laravel/framework/d/total.svg" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://poser.pugx.org/laravel/framework/v/stable.svg" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://poser.pugx.org/laravel/framework/license.svg" alt="License"></a>
-</p>
+#### Status of Site
 
-## About Laravel
+* If user using facebook button in Site, it will authorize user with app, create or update this Facebook account and set 
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel attempts to take the pain out of development by easing common tasks used in the majority of web projects, such as:
+```textmate
+  $fbAccount = Account::updateOrCreate([
+                     'social_id' => $fbUser['id'],
+                     'social_type' => config('system.social_type.facebook')
+                 ], [
+                     'social_name' => $fbUser['name'],
+                     'api_token' => (string) $accessTokenLong,
+                     'api_token_start_date' => Carbon::now()->toDateTimeString(),
+                     'user_id' => $user->id,
+                     'status' => true,
+                 ]);
+```
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+* All the Ads Accounts already related to this Facebook will be active again :
 
-Laravel is accessible, yet powerful, providing tools needed for large, robust applications. A superb combination of simplicity, elegance, and innovation give you tools you need to build any application with which you are tasked.
+```textmate
+Content::where('account_id', $fbAccount->id)->update(['status' => true]);
+```
 
-## Learning Laravel
+* After that we stores all the Ads Accounts it have in TempTable :
 
-Laravel has the most extensive and thorough documentation and video tutorial library of any modern web application framework. The [Laravel documentation](https://laravel.com/docs) is thorough, complete, and makes it a breeze to get started learning the framework.
+```textmate
+            TempAdAccount::where('account_id', $fbAccount->id)->delete();
+                foreach ($accounts as $account) {
+                    TempAdAccount::create([
+                        'social_id' => $account->account_id,
+                        'social_type' => config('system.social_type.facebook'),
+                        'account_id' => $fbAccount->id,
+                        'social_name' => $account->name,
+                        'currency' => $account->currency
+                    ]);
+                }
+```
 
-If you're not in the mood to read, [Laracasts](https://laracasts.com) contains over 900 video tutorials on a range of topics including Laravel, modern PHP, unit testing, JavaScript, and more. Boost the skill level of yourself and your entire team by digging into our comprehensive video library.
+* In next Step, the popup will open to let user choose which Ads Account to map with this user.
 
-## Laravel Sponsors
+```textmate
+#first release all existed AdAccounts with this user 
+           Content::where('user_id', $user->id)->update([
+                'user_id' => null
+            ]);
 
-We would like to extend our thanks to the following sponsors for helping fund on-going Laravel development. If you are interested in becoming a sponsor, please visit the Laravel [Patreon page](http://patreon.com/taylorotwell):
+            $tempAdAccounts = TempAdAccount::whereIn('id', $request->get('status'))
+                ->get();
+            # Second update all ads accounts which choose from popup to this user.
+            foreach ($tempAdAccounts as $tempAdAccount) {
 
-- **[Vehikl](http://vehikl.com)**
-- **[Tighten Co.](https://tighten.co)**
-- **[British Software Development](https://www.britishsoftware.co)**
-- **[Styde](https://styde.net)**
-- [Fragrantica](https://www.fragrantica.com)
-- [SOFTonSOFA](https://softonsofa.com/)
-- [User10](https://user10.com)
-- [Soumettre.fr](https://soumettre.fr/)
+               $adAccount = Content::updateOrCreate([
+                    'social_id' => $tempAdAccount->social_id,
+                    'social_type' => config('system.social_type.facebook')
+                ], [
+                    'social_name' => $tempAdAccount->social_name,
+                    'currency' => $tempAdAccount->currency,
+                    'account_id' => $tempAdAccount->account_id,
+                    'user_id' => $user->id,
+                    'status' => true
+                ]);
+               #fectch the insight for first time.
+               Helpers::fetchAccountElements($adAccount);
+            }
+```
+#### Cronjob Get elements.
 
-## Contributing
+```textmate
+$adAccounts = Content::whereNotNull('user_id')
+            ->where('social_type', config('system.social_type.facebook'))
+            ->where('status', true)
+            ->get();
+            
+               
+```
+```textmate
+ foreach ($adAccounts as $adAccount) {
+            Helpers::fetchAccountElements($adAccount);
+        }
+```
+When fetch element if get authorize then accounts and contents related be update to status false and can not fetch again until user with account related to make account and content active again.
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](http://laravel.com/docs/contributions).
 
-## Security Vulnerabilities
+* Date Insight CronJob We only fetch Insight and Log errors.
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell at taylor@laravel.com. All security vulnerabilities will be promptly addressed.
 
-## License
+#### Admin function map ad account to user 
 
-The Laravel framework is open-sourced software licensed under the [MIT license](http://opensource.org/licenses/MIT).
+Only can assign ads account which not belong to any user.
+
+Please notice that one contents can be in many facebook account, so each time latest account authorize will own this content.
+
+* When create user we no need to setup Ad Accounts
+
+* When edit User :
+
+We list all Ads Account which from User Facebook Accounts
+
+
+```textmate
+        $accountIds = Account::where('user_id', $user->id)->pluck('id')->all();
+        $contents = Content::whereIn('account_id', $accountIds)->get();
+
+
+        foreach ($contents as $content) {
+            $data[$content->id] = $content->social_name;
+
+            if ($content->user_id) {
+                $data[$content->id] .= ' (Owned by user '.$content->user->name.")";
+            }
+        }
+
+       
+```
+
+After that when admin assign we will create:
+
+```textmate
+        if ($this->filled('contents')) {
+            Content::where('user_id', $user->id)->update(['user_id' => null]);
+            Content::whereIn('id', $this->get('contents'))->update(['user_id' => $user->id]);
+        } else {
+            Content::where('user_id', $user->id)->update(['user_id' => null]);
+        }
+```
+
+* For reporting, we listed all reports for elements which have user_id map for ad accounts in both (Report Page and Index Page)
+
+For some accounts which not assign user yet, we still get insight for this but will not count in Report.

@@ -45,10 +45,9 @@ class DateInsight extends Command
         #start get insight for today.
 
         $activeElements = Element::where('social_type', config('system.social_type.facebook'))
-           /* ->where(function($q){
-                $q->whereRaw('DATE(last_insight_updated) < CURDATE()');
-                $q->orWhereNull('last_insight_updated');
-            })*/
+            ->whereHas('content', function($q) {
+                $q->where('status', true);
+            })
             ->get();
 
 

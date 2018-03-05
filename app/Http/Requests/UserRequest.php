@@ -67,7 +67,6 @@ class UserRequest extends FormRequest
             'name.required' => 'Vui lòng không để trống tên người dùng',
             'email.required' => 'Vui lòng không để trống email',
             'department_id.required' => 'Vui lòng chọn phòng ban',
-            'contents.required' => 'Vui lòng chọn ít nhất một tài khoản quảng cáo',
             'email.email' => 'Sai định dạng email',
         ];
     }
@@ -85,14 +84,8 @@ class UserRequest extends FormRequest
                 'department_id' => 0,
             ]);
         }
+        User::create(array_merge($this->all(), ['password' => md5(time())]));
 
-
-
-        $user = User::create(array_merge($this->all(), ['password' => md5(time())]));
-
-        if ($this->filled('contents')) {
-            Content::whereNull('user_id')->whereIn('id', $this->get('contents'))->update(['user_id' => $user->id]);
-        }
 
         return $this;
     }
@@ -120,7 +113,7 @@ class UserRequest extends FormRequest
 
         if ($this->filled('contents')) {
             Content::where('user_id', $user->id)->update(['user_id' => null]);
-            Content::whereNull('user_id')->whereIn('id', $this->get('contents'))->update(['user_id' => $user->id]);
+            Content::whereIn('id', $this->get('contents'))->update(['user_id' => $user->id]);
         } else {
             Content::where('user_id', $user->id)->update(['user_id' => null]);
         }
